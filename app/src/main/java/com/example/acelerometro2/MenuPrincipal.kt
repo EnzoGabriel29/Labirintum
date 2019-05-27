@@ -50,7 +50,7 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
 
     internal lateinit var db: BancoDados
 
-	private var rewrite: Boolean = false
+    private var rewrite: Boolean = false
 	
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
