@@ -1,5 +1,6 @@
 package com.example.acelerometro2
 
+import com.opencsv.CSVWriter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -9,11 +10,17 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.view.View
 import android.view.LayoutInflater
 import android.widget.*
+import java.io.File
+import java.io.FileWriter
 import java.util.*
+import android.widget.Toast
+
+
 
 class MenuPrincipal : AppCompatActivity(), SensorEventListener {
     // Declara as Views para cada tipo de visualização
@@ -43,6 +50,8 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
 
     internal lateinit var db: BancoDados
 
+	private var rewrite: Boolean = false
+	
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_principal)
@@ -102,6 +111,9 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
                         db.addAcc(acc)
                         atualizarLista(this@MenuPrincipal, acc)
 
+                        escreverCSV(acc, rewrite)
+						rewrite = false
+
                         handler.postDelayed(this, delay.toLong())
                     }
                 }, delay.toLong())
@@ -139,6 +151,23 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
         valorEixoZ.text = String.format("%.2f", acc.valorZ)
 
         parent.addView(child)
+    }
+
+    private fun escreverCSV(acc: Acelerometro, rw: Boolean){
+        try {
+			val filepath = Environment.getExternalStorageDirectory().getPath() + "/orders.csv"
+            val writer = CSVWriter(FileWriter(filepath, !rw), ',',  CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, "\r\n")
+            			
+            var dadosList = arrayOf(acc.horario,
+                                   String.format("%.2f", acc.valorX).replace(',', '.'),
+                                   String.format("%.2f", acc.valorY).replace(',', '.'),
+                                   String.format("%.2f", acc.valorZ).replace(',', '.'))
+            
+            writer.close()
+        } catch (erMsg: Exception) {
+            Toast.makeText(this, erMsg.toString(), Toast.LENGTH_LONG).show()
+            erMsg.printStackTrace()
+        }
     }
 
     private fun inflateLayoutTexto(parent: LinearLayout, init: Boolean){
@@ -225,4 +254,4 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
             }
         }
     }
-}
+} 
