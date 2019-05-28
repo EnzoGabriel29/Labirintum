@@ -7,6 +7,7 @@ Permite ao usuário armazenar as informações enviadas pelo sensor de aceleraç
 - Permite ao usuário salvar os dados em um período de tempo definido.
 - São registrados o horário em que foi o dado foi salvo e os valores dos 3 eixos.
 - Os dados são salvos em memória, usando o SQLite.
+- **NOVO** Os dados agora também são salvos em um arquivo CSV no dispositivo.
 
 ## Introdução
 
