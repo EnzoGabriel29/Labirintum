@@ -1,6 +1,5 @@
 package com.example.acelerometro2
 
-import com.opencsv.CSVWriter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -19,6 +18,7 @@ import java.io.File
 import java.io.FileWriter
 import java.util.*
 import android.widget.Toast
+import com.example.acelerometro2.*
 
 
 
@@ -50,7 +50,10 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
 
     internal lateinit var db: BancoDados
 
+
     private var rewrite: Boolean = false
+
+
 	
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,7 +94,7 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
         switchSalvar.setOnCheckedChangeListener{_, _ ->
             // Caso o usuário defina a opção de salvar os dados periodicamente
             if (switchSalvar.isChecked){
-                val numIntervalo = if (txtIntervalo.text.toString().isEmpty()) 0 else txtIntervalo.text.toString().toInt()
+                val numIntervalo = if (txtIntervalo.text.toString().isEmpty()) 0.toFloat() else txtIntervalo.text.toString().toFloat()
                 txtIntervalo.isEnabled = false
 
                 val delay = numIntervalo * 1000
@@ -126,6 +129,7 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
 
         val btnDelete = findViewById<Button>(R.id.btnDeletarDados)
         btnDelete.setOnClickListener {
+            rewrite = true
             val arrayAcc = db.getAcc
             for (i in arrayAcc)
                 db.deleteAcc(i)
@@ -155,15 +159,20 @@ class MenuPrincipal : AppCompatActivity(), SensorEventListener {
 
     private fun escreverCSV(acc: Acelerometro, rw: Boolean){
         try {
-			val filepath = Environment.getExternalStorageDirectory().getPath() + "/orders.csv"
-            val writer = CSVWriter(FileWriter(filepath, !rw), ',',  CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, "\r\n")
-            			
-            var dadosList = arrayOf(acc.horario,
-                                   String.format("%.2f", acc.valorX).replace(',', '.'),
-                                   String.format("%.2f", acc.valorY).replace(',', '.'),
-                                   String.format("%.2f", acc.valorZ).replace(',', '.'))
-            
+            val filepath = Environment.getExternalStorageDirectory().path + "/valores.csv")
+            val writer = FileWriter(filepath, !rw)
+            if (rw) writer.append("HORÁRIO,EIXO X,EIXOY,EIXOZ\n")
+
+            val dadosList = arrayOf(acc.horario,
+                String.format("%.2f", acc.valorX).replace(',', '.'),
+                String.format("%.2f", acc.valorY).replace(',', '.'),
+                String.format("%.2f", acc.valorZ).replace(',', '.'))
+
+            val stringData = dadosList.joinToString(",")
+            writer.append(stringData)
+            writer.append('\n')
             writer.close()
+
         } catch (erMsg: Exception) {
             Toast.makeText(this, erMsg.toString(), Toast.LENGTH_LONG).show()
             erMsg.printStackTrace()
