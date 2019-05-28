@@ -11,12 +11,12 @@
 
     <LinearLayout
             android:orientation="vertical"
-            android:layout_marginBottom="15dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="15dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:id="@+id/top_layout">
         <TextView
                 android:text="Modo de visualização"
@@ -41,7 +41,6 @@
 
     <LinearLayout
             android:orientation="vertical"
-            android:layout_marginTop="15dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/bottom_layout">
@@ -49,8 +48,8 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
                 android:id="@+id/salvarDadosLayout">
             <Switch
                     android:layout_width="wrap_content"
@@ -68,9 +67,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
                     android:layout_marginStart="10dp"
-                    android:inputType="number"
                     android:ems="3"
-                    android:id="@+id/edtIntervalo"/>
+                    android:id="@+id/edtIntervalo" android:inputType="numberDecimal"/>
             <TextView
                     android:text="segundos."
                     android:layout_width="wrap_content"
