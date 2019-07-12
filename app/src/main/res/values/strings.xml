@@ -1,6 +1,3 @@
 <resources>
-    <string name="app_name">Acelerômetro Visual</string>
-    <string name="stringEixoX">EIXO X</string>
-    <string name="stringEixoY">EIXO Y</string>
-    <string name="stringEixoZ">EIXO Z</string>
+    <string name="app_name">Labirintum App</string>
 </resources>
