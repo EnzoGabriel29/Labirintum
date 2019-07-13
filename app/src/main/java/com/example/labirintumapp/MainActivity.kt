@@ -1,26 +1,49 @@
-class MainActivity : AppCompatActivity() , SensorEventListener {
-    init{
-        private val txtEixoX: TextView         = findViewById(R.id.txtEixoX)
-        private val txtEixoY: TextView         = findViewById(R.id.txtEixoY)
-        private val txtEixoZ: TextView         = findViewById(R.id.txtEixoZ)
-        private val btnIniciar: TextView       = findViewById(R.id.btnIniciar)
-        private val mainlayout: RelativeLayout = findViewById(R.id.main_layout)
+package com.example.labirintumapp
 
-        // Atributos do Acelerômetro
-        private var sensorManager: SensorManager? = null
-        private var firstIter: Boolean = false
-        private var eixoX0: Double = 0.0
-        private var eixoY0: Double = 0.0
-        private var eixoZ0: Double = 0.0
-        private var eixoX: Double = 0.0
-        private var eixoY: Double = 0.0
-        private var eixoZ: Double = 0.0
-    }
-    
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.content.DialogInterface
+import android.content.Intent
+import android.os.Handler
+import android.util.Log
+import android.view.Gravity
+import android.widget.*
+import java.util.*
+
+class MainActivity : AppCompatActivity() , SensorEventListener {
+    private lateinit var txtEixoX: TextView
+    private lateinit var txtEixoY: TextView      
+    private lateinit var txtEixoZ: TextView      
+    private lateinit var btnIniciar: TextView      
+    private lateinit var mainLayout: RelativeLayout 
+
+    private var sensorManager: SensorManager? = null
+    private var firstIter: Boolean = false
+    private var eixoX0: Double = 0.0
+    private var eixoY0: Double = 0.0
+    private var eixoZ0: Double = 0.0
+    private var eixoX: Double = 0.0
+    private var eixoY: Double = 0.0
+    private var eixoZ: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_principal)
+
+        txtEixoX = findViewById(R.id.txtEixoX)
+        txtEixoY = findViewById(R.id.txtEixoY)
+        txtEixoZ = findViewById(R.id.txtEixoZ)
+        btnIniciar = findViewById(R.id.btnIniciar)
+        mainLayout = findViewById(R.id.main_layout)
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         sensorManager!!.registerListener(this,
@@ -38,10 +61,10 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT)
             lp2.leftMargin = 20
-            input.layoutParams = lp
+            input.layoutParams = lp2
             bSetFilename.setView(input)
 
-            bSetFilename.setPositiveButton("Iniciar", object : DialogInterface.OnClickListener() {
+            bSetFilename.setPositiveButton("Iniciar", object : DialogInterface.OnClickListener {
                 override fun onClick(dialog: DialogInterface, id: Int) {
                     var filename = input.text.toString()
                     if (!filename.endsWith(".csv", true)) filename += ".csv"

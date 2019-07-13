@@ -1,10 +1,21 @@
+package com.example.labirintumapp
+
+import java.util.UUID
+import java.lang.Thread
+import android.bluetooth.BluetoothSocket
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothServerSocket
+import android.util.Log
+import java.io.IOException
+
 val uuid = UUID.fromString("8989063a-c9af-463a-b3f1-f21d9b2b827b")
 
-class BluetoothServerController(activity: MainActivity) : Thread() {
+class BluetoothServerController(activity: MenuGravacao) : Thread() {
     private var cancelled: Boolean
     private val serverSocket: BluetoothServerSocket?
-    private val activity = activity
-    private lateinit val socket: BluetoothSocketWrapper
+    private val activity: MenuGravacao = activity
+    private lateinit var socket: BluetoothSocket
 
     init {
         val btAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -19,8 +30,6 @@ class BluetoothServerController(activity: MainActivity) : Thread() {
     }
 
     override fun run() {
-        var socket: BluetoothSocket
-
         while(true) {
             if (cancelled) break
             
@@ -46,12 +55,12 @@ class BluetoothServerController(activity: MainActivity) : Thread() {
     }
 }
 
-class BluetoothServer(act: Activity, soc: BluetoothSocket): Thread() {
-    private val activity = act
+class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
+    private val activity: MenuGravacao = act
     private val socket = soc
     private val inputStream = socket.inputStream
     private val outputStream = socket.outputStream
-    var text: String
+    private var text: String = ""
 
     override fun run() {
         try {
@@ -60,7 +69,7 @@ class BluetoothServer(act: Activity, soc: BluetoothSocket): Thread() {
             Log.i("server", "Reading")
             inputStream.read(bytes, 0, available)
 
-            val text = String(bytes)
+            text = String(bytes)
             when (text) {
                 "1" -> activity.iniciarGravacao()
                 "0" -> activity.pararGravacao()

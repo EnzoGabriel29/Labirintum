@@ -17,6 +17,11 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import java.io.FileWriter
 import java.util.*
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothAdapter
+import android.content.DialogInterface
+import androidx.appcompat.app.AlertDialog
+import java.io.File
 
 class Acelerometro {
     var horario: String? = null
@@ -35,30 +40,16 @@ class Acelerometro {
 }
 
 class MenuGravacao : AppCompatActivity() , SensorEventListener {
-    init {
+    
         // layout init
-        private val txtEixoX: TextView        = findViewById(R.id.txtEixoX)
-        private val txtEixoY: TextView        = findViewById(R.id.txtEixoY)
-        private val txtEixoZ: TextView        = findViewById(R.id.txtEixoZ)
-        private val tabelaDados: TableLayout  = findViewById(R.id.tabelaDados)
-        private val recLayout: RelativeLayout = findViewById(R.id.rec_layout)
-        private val conLayout: LinearLayout   = findViewById(R.id.controll_layout)
-        private val btnPausar: TextView       = findViewById(R.id.btnPausar)
-        private val btnParar: TextView        = findViewById(R.id.btnParar)
-
-        var btnPausarMode = 'P'
-        btnPausar.setOnClickListener {
-            if (btnPausarMode == 'P') {
-                handler.removeCallbacksAndMessages(null)
-                btnPausarMode = 'C'
-                btnPausar.text = "Continuar"
-            }
-            else {
-                ativarHandler(handler, numIntervalo)
-                btnPausarMode = 'P'
-                btnPausar.text = "Pausar"
-            }
-        }
+        private lateinit var txtEixoX: TextView        
+        private lateinit var txtEixoY: TextView        
+        private lateinit var txtEixoZ: TextView        
+        private lateinit var tabelaDados: TableLayout 
+        private lateinit var recLayout: RelativeLayout
+        private lateinit var conLayout: LinearLayout  
+        private lateinit var btnPausar: TextView      
+        private lateinit var btnParar: TextView        
 
         // accelerometer init
         private var sensorManager: SensorManager? = null
@@ -73,18 +64,43 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
         // save file init
         private var filename: String = ""
-        private var filepath: String = ""
+        private var filetype: String = ""
         private var recmode: String  = ""
-        private lateinit var usertype: String
+        private var filepath: String = ""
+        private var usertype: String = ""
 
         // bluetooth init
         private lateinit var patientDevice: BluetoothDevice
-    }
+    
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_gravacao)
 
+        txtEixoX = findViewById(R.id.txtEixoX)
+        txtEixoY = findViewById(R.id.txtEixoY)
+        txtEixoZ = findViewById(R.id.txtEixoZ)
+        tabelaDados = findViewById(R.id.tabelaDados)
+        recLayout = findViewById(R.id.rec_layout)
+        conLayout = findViewById(R.id.controll_layout)
+        btnPausar = findViewById(R.id.btnPausar)
+        btnParar = findViewById(R.id.btnParar)
+
+        var btnPausarMode = 'P'
+        btnPausar.setOnClickListener {
+            if (btnPausarMode == 'P') {
+                handler.removeCallbacksAndMessages(null)
+                btnPausarMode = 'C'
+                btnPausar.text = "Continuar"
+            }
+            else {
+                val numIntervalo = 0.5
+                ativarHandler(numIntervalo)
+                btnPausarMode = 'P'
+                btnPausar.text = "Pausar"
+            }
+        }
+        
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         sensorManager!!.registerListener(this,
             sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -94,29 +110,44 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         filename = intentMain.getStringExtra("fileName")
         filetype = intentMain.getStringExtra("fileType")
         recmode = intentMain.getStringExtra("recMode")
-        fileparent = Environment.getExternalStorageDirectory().path
+        val fileparent = Environment.getExternalStorageDirectory().path
 
-        // initialize usertype variable
-        val bChooseUser = AlertDialog.Builder(this)
-        val optionsUsers = arrayOf("Dispositivo do terapeuta", "Dispositivo do paciente")
-        bChooseUser.setTitle("Qual dispositivo você está usando?")
-        bChooseUser.setItems(optionsUsers, object : DialogInterface.OnClickListener() {
-            override fun onClick(dialog: DialogInterface, which: Int) {
-                usertype = if (which == 0) "root" else "user"
-                bChooseUser.cancel()
-            }
-        })
-        bChooseUser.setNegativeButton(getString(R.string.cancel), object : DialogInterface.OnClickListener() {
-            override fun onClick(dialog: DialogInterface, which: Int) {
-                bChooseUser.cancel()
-            }
-        })
-        bChooseUser.show()
+        if (recmode == "N")
+            createDefaultLayout()
+        else {
+            // initialize usertype variable
+            val bChooseUser = AlertDialog.Builder(this)
+            val optionsUsers = arrayOf("Dispositivo do terapeuta", "Dispositivo do paciente")
+            bChooseUser.setTitle("Qual dispositivo você está usando?")
+            bChooseUser.setItems(optionsUsers, object : DialogInterface.OnClickListener {
+                override fun onClick(dialog: DialogInterface, which: Int) {
+                    usertype = if (which == 0) "root" else "user"
+
+                    Toast.makeText(applicationContext, "recmode: $recmode, usertype: $usertype", Toast.LENGTH_SHORT).show()
+
+                    // create layout based on recmode/usertype
+                    if (recmode == "N")
+                        createDefaultLayout()
+                    else if (recmode == "R" && usertype == "user")
+                        createRemoteUserLayout()
+                    else if (recmode == "R" && usertype == "root")
+                        createRemoteRootLayout()
+
+                    dialog.cancel()
+                }
+            })
+            bChooseUser.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
+                override fun onClick(dialog: DialogInterface, which: Int) {
+                    dialog.cancel()
+                }
+            })
+            bChooseUser.show()
+        }
 
         // handle filename already exists
         var cont = 0
         while (true) {
-            var filepath = "$fileparent/$filename.$filetype"
+            filepath = "$fileparent/$filename.$filetype"
             var fileObj = File(filepath)
 
             if (fileObj.isFile()){
@@ -126,20 +157,10 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             else break
         }
 
-        // create layout based on recmode/usertype
-        if (recmode == "N")
-            createDefaultLayout()
-        else if (recmode == "R" && usertype == "user")
-            createRemoteUserLayout()
-        else if (recmode == "R" && usertype == "root")
-            createRemoteRootLayout()
-
-        Toast.makeText(this, "O registro dos dados foi iniciado! " +
-                "O arquivo será salvo em $filepath.", Toast.LENGTH_LONG).show()
-
     }
 
     private fun createDefaultLayout(){
+        iniciarGravacao()
         btnParar.setOnClickListener {
             pararGravacao()
         }
@@ -158,16 +179,25 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         val mPairedDevices = mBluetoothAdapter.getBondedDevices()
 
-        var optionsDevices = emptyArray<String>()
-        for (device in mPairedDevices) 
-            optionsDevices += device.name
+        var optionsDevicesName = emptyArray<String>()
+        var optionsDevicesAddress = emptyArray<String>()
+        var contDevice: Int = 0
+        for (device in mPairedDevices){
+            contDevice += 1
+            optionsDevicesName += device.name
+            optionsDevicesAddress += device.address
+        }
+
+        if (contDevice == 0)
+            Toast.makeText(this, "ITS EMPTY", Toast.LENGTH_SHORT).show()
+       
                     
         bChoosePaired.setTitle("Dispositivos pareados")
-        bChoosePaired.setItems(optionsDevices, object : DialogInterface.OnClickListener() {
+        bChoosePaired.setItems(optionsDevicesName, object : DialogInterface.OnClickListener {
             override fun onClick(dialog: DialogInterface, which: Int) {
-                patientDevice = mPairedDevices[which]
+                patientDevice = mBluetoothAdapter.getRemoteDevice(optionsDevicesAddress[which])
                 BluetoothClient(patientDevice, "1").start()
-                bChoosePaired.cancel()
+                dialog.dismiss()
             }
         })
 
@@ -179,6 +209,9 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     }
 
     public fun iniciarGravacao(){
+        Toast.makeText(this, "O registro dos dados foi iniciado! " +
+                "O arquivo será salvo em $filepath.", Toast.LENGTH_LONG).show()
+
         val numIntervalo = 0.5
         ativarHandler(numIntervalo)
     }
@@ -206,7 +239,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                 val acc = Acelerometro(strData, eixoX, eixoY, eixoZ)
 
                 atualizarLista(tabelaDados, acc)
-                escreverCSV(acc, rewrite)
+                escreverCSV(acc, false)
 
                 handler.postDelayed(this, delay.toLong())
             }
