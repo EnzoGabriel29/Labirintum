@@ -8,8 +8,24 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothServerSocket
 import android.util.Log
 import java.io.IOException
+import android.widget.Toast
+import java.io.FileWriter
+import java.io.StringWriter
+import java.io.PrintWriter
+import android.os.Handler
+import android.os.Looper
+import android.content.Context
 
 val uuid = UUID.fromString("8989063a-c9af-463a-b3f1-f21d9b2b827b")
+
+fun showToast(context: Context, msg: String) {
+    val handler = Handler(Looper.getMainLooper())
+    handler.post(object : Runnable {
+        public override fun run() {
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        }
+    })
+}
 
 class BluetoothServerController(activity: MenuGravacao) : Thread() {
     private var cancelled: Boolean
@@ -20,7 +36,6 @@ class BluetoothServerController(activity: MenuGravacao) : Thread() {
     init {
         val btAdapter = BluetoothAdapter.getDefaultAdapter()
         if (btAdapter != null) {
-            // create a server socket, identified by the uuid
             serverSocket = btAdapter.listenUsingRfcommWithServiceRecord("test", uuid)
             cancelled = false
         } else {
@@ -34,17 +49,14 @@ class BluetoothServerController(activity: MenuGravacao) : Thread() {
             if (cancelled) break
             
             try {
-                // once thread execution started, wait for the
-                // client connections using accept() method
-                socket = serverSocket!!.accept() }
-            catch (e: IOException) { break }
+                socket = serverSocket!!.accept()
+            }
+            catch (e: IOException) {
+                break
+            }
 
             if (!cancelled && socket != null) {
-                Log.i("server", "Connecting")
-                // once client established connection, accept()
-                // method returns a BluetoothSocket reference
-                // that gives access to the input and output streams
-                BluetoothServer(activity, socket).start() 
+                BluetoothServer(activity, socket).start()
             }
         }
     }
@@ -66,20 +78,18 @@ class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
         try {
             val available = inputStream.available()
             val bytes = ByteArray(available)
-            Log.i("server", "Reading")
+
             inputStream.read(bytes, 0, available)
 
             text = String(bytes)
             when (text) {
                 "1" -> activity.iniciarGravacao()
+                "2" -> activity.pausarGravacao()
+                "3" -> activity.retomarGravacao()
                 "0" -> activity.pararGravacao()
             }
 
-            Log.i("server", "Message received")
-            Log.i("server", text)
-            // Toast.makeText(activity, text, Toast.LENGHT_SHORT).show()
         } catch (e: Exception) {
-            Log.e("client", "Cannot read data", e)
         } finally {
             inputStream.close()
             outputStream.close()
@@ -88,28 +98,39 @@ class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
     }
 }
 
-class BluetoothClient(device: BluetoothDevice, msg: String): Thread() {
+class BluetoothClient(act: MenuGravacao, device: BluetoothDevice, msg: String): Thread() {
+    private val activity = act
     private val socket = device.createRfcommSocketToServiceRecord(uuid)
     private val message = msg
 
     override fun run() {
-        Log.i("client", "Connecting")
-        socket.connect()
+        var socketConnected = false
 
-        Log.i("client", "Sending")
-        val outputStream = socket.outputStream
-        val inputStream = socket.inputStream
-        
         try {
-            outputStream.write(message.toByteArray())
-            outputStream.flush()
-            Log.i("client", "Sent")
+            showToast(activity, "Tentando conectar ao dispositivo do paciente...")
+            socket.connect()
+            socketConnected = true
         } catch(e: Exception) {
-            Log.e("client", "Cannot send", e)
-        } finally {
-            outputStream.close()
-            inputStream.close()
-            socket.close()
+            activity.pararGravacao()
+            showToast(activity, "Conexão expirada!")
         }
+
+        if (socketConnected) {
+            val outputStream = socket.outputStream
+            val inputStream = socket.inputStream
+            
+            try {
+                outputStream.write(message.toByteArray())
+                outputStream.flush()
+            } catch(e: Exception) {
+            } finally {
+                outputStream.close()
+                inputStream.close()
+                socket.close()
+            }
+        }
+        
+
+        
     }
 }

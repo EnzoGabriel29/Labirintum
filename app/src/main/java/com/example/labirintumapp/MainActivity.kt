@@ -55,19 +55,18 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
             val bSetFilename = AlertDialog.Builder(this)
             bSetFilename.setTitle("Qual é o nome do arquivo?")
 
-            // inflate layout (?)
+            
             val input = EditText(this)
             val lp2 = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT)
-            lp2.leftMargin = 20
             input.layoutParams = lp2
-            bSetFilename.setView(input)
+            input.hint = "Insira o nome do arquivo"
+            bSetFilename.setView(input, 20, 0, 20, 0)
 
             bSetFilename.setPositiveButton("Iniciar", object : DialogInterface.OnClickListener {
                 override fun onClick(dialog: DialogInterface, id: Int) {
                     var filename = input.text.toString()
-                    if (!filename.endsWith(".csv", true)) filename += ".csv"
                     iniciarGravacao(filename, "csv", "N")
                 }
             })
@@ -111,7 +110,6 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         when (item.itemId) {
             R.id.action_settings -> Toast.makeText(this, "Settings", Toast.LENGTH_LONG).show()
             R.id.action_remote -> defineRemoteLayout()
-            // R.id.action_speech -> defineSpeechLayout()
         }
 
         return true
@@ -131,6 +129,4 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         mainLayout.removeView(btnIniciar)
         iniciarGravacao("bluetoothRec", "csv", "R")
     }
-
-
 }
