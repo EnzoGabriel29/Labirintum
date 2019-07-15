@@ -27,6 +27,7 @@ fun showToast(context: Context, msg: String) {
     })
 }
 
+// controla o usuário que receberá os dados via bluetooth
 class BluetoothServerController(activity: MenuGravacao) : Thread() {
     private var cancelled: Boolean
     private val serverSocket: BluetoothServerSocket?
@@ -49,6 +50,7 @@ class BluetoothServerController(activity: MenuGravacao) : Thread() {
             if (cancelled) break
             
             try {
+                showToast(activity, "Aguardando a conexão do dispositivo do terapeuta...")
                 socket = serverSocket!!.accept()
             }
             catch (e: IOException) {
@@ -67,6 +69,7 @@ class BluetoothServerController(activity: MenuGravacao) : Thread() {
     }
 }
 
+// usuário que receberá os dados via bluetooth
 class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
     private val activity: MenuGravacao = act
     private val socket = soc
@@ -98,6 +101,7 @@ class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
     }
 }
 
+// usuário que enviará os dados via bluetooth
 class BluetoothClient(act: MenuGravacao, device: BluetoothDevice, msg: String): Thread() {
     private val activity = act
     private val socket = device.createRfcommSocketToServiceRecord(uuid)
