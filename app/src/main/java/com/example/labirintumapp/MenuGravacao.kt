@@ -105,11 +105,22 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             SensorManager.SENSOR_DELAY_NORMAL)
 
         val intentMain = intent
+        val fileparent = Environment.getExternalStorageDirectory().path
         filename = intentMain.getStringExtra("fileName")
         filetype = intentMain.getStringExtra("fileType")
+        
         recmode = intentMain.getStringExtra("recMode")
-        val fileparent = Environment.getExternalStorageDirectory().path
-
+        // if (recmode == "N") {
+        //    modo normal de gravação, usuário pressiona
+        //    o botão de iniciar manualmente e salva os
+        //    dados gerados pelo acelerometro no proprio dispositivo
+        // } else if (recmode == "R") {
+        //    modo remoto de gravação onde são necessários
+        //    dois usuários, um 'root', que controla os registros
+        //    da gravação, e um 'user', em que será registrado os
+        //    dados do acelerômetro no seu dispositivo
+        // }
+        
         var cont = 0
         while (true) {
             filepath = "$fileparent/$filename.$filetype"
