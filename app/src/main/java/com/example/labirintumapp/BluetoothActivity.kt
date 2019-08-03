@@ -18,27 +18,39 @@ import android.content.Context
 
 val uuid = UUID.fromString("8989063a-c9af-463a-b3f1-f21d9b2b827b")
 
-fun showToast(context: Context, msg: String) {
+fun showToast(context: Context, msg: String, len: Int) {
     val handler = Handler(Looper.getMainLooper())
     handler.post(object : Runnable {
-        public override fun run() {
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        override fun run() {
+            val dur = if (len == 0) Toast.LENGTH_SHORT else Toast.LENGTH_LONG
+            Toast.makeText(context, msg, dur).show()
         }
     })
 }
 
-// controla o usuário que receberá os dados via bluetooth
 class BluetoothServerController(activity: MenuGravacao) : Thread() {
     private var cancelled: Boolean
-    private val serverSocket: BluetoothServerSocket?
+    private var serverSocket: BluetoothServerSocket?
     private val activity: MenuGravacao = activity
     private lateinit var socket: BluetoothSocket
 
     init {
+        escreverLog("BluetoothServerController: Started thread")
         val btAdapter = BluetoothAdapter.getDefaultAdapter()
         if (btAdapter != null) {
-            serverSocket = btAdapter.listenUsingRfcommWithServiceRecord("test", uuid)
-            cancelled = false
+            try {
+                serverSocket = btAdapter.listenUsingRfcommWithServiceRecord("test", uuid)
+                escreverLog("BluetoothServerController: Socket created")
+                cancelled = false
+                showToast(activity, "Aguardando conexão com o " +
+                    " dispositivo do terapeuta...", 0)
+            } catch (e: IOException) {
+                showToast(activity, "Não foi possível iniciar o Bluetooth. "
+                    + "Você ativou o Bluetooth no seu dispotivo?", 1)
+                serverSocket = null
+                cancelled = true
+                activity.pararGravacao()
+            }
         } else {
             serverSocket = null
             cancelled = true
@@ -50,15 +62,20 @@ class BluetoothServerController(activity: MenuGravacao) : Thread() {
             if (cancelled) break
             
             try {
-                showToast(activity, "Aguardando a conexão do dispositivo do terapeuta...")
                 socket = serverSocket!!.accept()
             }
             catch (e: IOException) {
+                val errors = StringWriter()
+                e.printStackTrace(PrintWriter(errors))
+                escreverLog("BluetoothServerController: Error found")
+                escreverLog(errors.toString())
                 break
             }
 
             if (!cancelled && socket != null) {
+                escreverLog("BluetoothServerController: Connecting")
                 BluetoothServer(activity, socket).start()
+                escreverLog("BluetoothServer: Started thread") 
             }
         }
     }
@@ -69,7 +86,6 @@ class BluetoothServerController(activity: MenuGravacao) : Thread() {
     }
 }
 
-// usuário que receberá os dados via bluetooth
 class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
     private val activity: MenuGravacao = act
     private val socket = soc
@@ -81,6 +97,7 @@ class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
         try {
             val available = inputStream.available()
             val bytes = ByteArray(available)
+            escreverLog("BluetoothServer: Reading")
 
             inputStream.read(bytes, 0, available)
 
@@ -92,7 +109,13 @@ class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
                 "0" -> activity.pararGravacao()
             }
 
+            escreverLog("BluetoothServer: Message received")
+            escreverLog("BluetoothServer: Message: $text")
         } catch (e: Exception) {
+            escreverLog("BluetoothServer: Cannot read message")
+            val errors = StringWriter()
+            e.printStackTrace(PrintWriter(errors))
+            escreverLog(errors.toString())
         } finally {
             inputStream.close()
             outputStream.close()
@@ -101,7 +124,6 @@ class BluetoothServer(act: MenuGravacao, soc: BluetoothSocket): Thread() {
     }
 }
 
-// usuário que enviará os dados via bluetooth
 class BluetoothClient(act: MenuGravacao, device: BluetoothDevice, msg: String): Thread() {
     private val activity = act
     private val socket = device.createRfcommSocketToServiceRecord(uuid)
@@ -110,31 +132,34 @@ class BluetoothClient(act: MenuGravacao, device: BluetoothDevice, msg: String): 
     override fun run() {
         var socketConnected = false
 
+        escreverLog("BluetoothClient: Connecting")
         try {
-            showToast(activity, "Tentando conectar ao dispositivo do paciente...")
+            showToast(activity, "Tentando conectar ao dispositivo do paciente...", 0)
             socket.connect()
             socketConnected = true
         } catch(e: Exception) {
+            escreverLog("BluetoothClient: Timeout")
             activity.pararGravacao()
-            showToast(activity, "Conexão expirada!")
+            showToast(activity, "Conexão expirada!", 0)
         }
 
         if (socketConnected) {
+            escreverLog("BluetoothClient: Sending")
             val outputStream = socket.outputStream
             val inputStream = socket.inputStream
             
             try {
                 outputStream.write(message.toByteArray())
                 outputStream.flush()
+                escreverLog("BluetoothClient: Message sent")
+                escreverLog("BluetoothClient: Message: $message")
             } catch(e: Exception) {
+                escreverLog("BluetoothClient: Cannot send message")
             } finally {
                 outputStream.close()
                 inputStream.close()
                 socket.close()
             }
         }
-        
-
-        
     }
 }

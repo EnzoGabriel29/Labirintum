@@ -98,13 +98,13 @@
             android:gravity="center"
             android:layout_below="@id/txtView3"
             android:paddingTop="10dp"
-            android:paddingBottom="10dp"
+            android:paddingBottom="20dp"
             android:textSize="20sp"
             android:textStyle="bold"
             android:id="@+id/txtView4"/>
     <ScrollView
             android:layout_below="@id/txtView4"
-            android:paddingBottom="50dp"
+            android:paddingBottom="70dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         <TableLayout
