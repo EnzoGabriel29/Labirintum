@@ -22,6 +22,12 @@ import android.content.DialogInterface
 import androidx.appcompat.app.AlertDialog
 import android.os.Build
 import android.os.Environment
+import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
+import java.nio.charset.Charset
+import java.util.UUID
 
 fun escreverLog(msg: String){
     val filepath = Environment.getExternalStorageDirectory().path + "/log.txt"
@@ -94,7 +100,12 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private var maxLinesOn: Boolean = false
     private var header: Boolean = true
 
-    private lateinit var patientDevice: BluetoothDevice
+    private var bluetoothConnected = false
+    private var broadcastsRegistered = arrayOf(false, false, false, false)
+    private var mBluetoothConnection: BluetoothConnectionService? = null
+    private val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    private lateinit var myDevice: BluetoothDevice
+    private var listDevices = emptyArray<BluetoothDevice>()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,6 +150,31 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         if (recmode == "N")
             createDefaultLayout()
         else {
+
+            val filter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+            registerReceiver(mBroadcastReceiver4, filter)
+            broadcastsRegistered[3] = true
+
+
+            if (mBluetoothAdapter == null){
+                Toast.makeText(this, "O seu dispositivo não " +
+                    "possui o recurso de Bluetooth.", Toast.LENGTH_LONG)
+                pararGravacao()
+            }
+            
+            if (!mBluetoothAdapter.isEnabled()){
+                Toast.makeText(this, "Ativando o Bluetooth...", Toast.LENGTH_SHORT)
+                
+                val enableBTIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivity(enableBTIntent)
+                
+                val BTIntent = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+                registerReceiver(mBroadcastReceiver1, BTIntent)
+                broadcastsRegistered[0] = true 
+
+                Toast.makeText(this, "Bluetooth ativado!", Toast.LENGTH_SHORT)
+            }
+
             val bChooseUser = AlertDialog.Builder(this)
             val optionsUsers = arrayOf("Dispositivo do terapeuta", "Dispositivo do paciente")
             bChooseUser.setTitle("Qual dispositivo você está usando?")
@@ -180,12 +216,32 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         recLayout.removeView(btnPausar)
         recLayout.removeView(btnParar)
 
-        BluetoothServerController(this).start()
+        escreverLog("btnEnableDisable_Discoverable: Making device discoverable for 300 seconds.")
+        val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
+        startActivity(discoverableIntent)
+        // aki
+        val intentFilter = IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
+        registerReceiver(mBroadcastReceiver2, intentFilter)
+        broadcastsRegistered[1] = true
     }
 
     private fun createRemoteRootLayout(){
         val bChoosePaired = AlertDialog.Builder(this)
-        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        escreverLog("btnDiscover: Looking for unpaired devices.")
+        checkBTPermissions()
+
+        /*
+        mBluetoothAdapter.startDiscovery()
+        val discoverDevicesIntent = IntentFilter(BluetoothDevice.ACTION_FOUND)
+        registerReceiver(mBroadcastReceiver3, discoverDevicesIntent)
+        broadcastsRegistered[2] = true
+
+        var optionsDevicesName = emptyArray<String>()
+        for (device in listDevices) {
+            optionsDevicesName += device.name
+        }
+        */
         val mPairedDevices = mBluetoothAdapter.getBondedDevices()
 
         var optionsDevicesName = emptyArray<String>()
@@ -195,14 +251,33 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             contDevice += 1
             optionsDevicesName += device.name
             optionsDevicesAddress += device.address
+            listDevices += device
         }
-  
+
         bChoosePaired.setTitle("Dispositivos pareados")
         bChoosePaired.setItems(optionsDevicesName, object : DialogInterface.OnClickListener {
             override fun onClick(dialog: DialogInterface, which: Int) {
-                patientDevice = mBluetoothAdapter.getRemoteDevice(optionsDevicesAddress[which])
-                escreverLog("ModoGravacao: Choosed device ${optionsDevicesName[which]}")
-                BluetoothClient(this@MenuGravacao, patientDevice, "1").start()
+                mBluetoothAdapter.cancelDiscovery()
+
+                escreverLog("onItemClick: You Clicked on a device.")
+                val deviceName = listDevices[which].name
+                val deviceAddress = listDevices[which].address
+
+                escreverLog("onItemClick: deviceName = $deviceName")
+                escreverLog("onItemClick: deviceAddress = $deviceAddress")
+
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    escreverLog("Trying to pair with $deviceName")
+                    listDevices[which].createBond()
+                    myDevice = listDevices[which]
+                    mBluetoothConnection = BluetoothConnectionService(this@MenuGravacao)
+                }
+
+                bluetoothConnected = true
+                escreverLog("startBTConnection: Initializing RFCOM Bluetooth Connection.")
+                mBluetoothConnection!!.startClient(myDevice, MY_UUID_INSECURE)
+                mBluetoothConnection!!.write("1".toByteArray(Charset.defaultCharset()))
+
                 dialog.dismiss()
             }
         })
@@ -217,18 +292,18 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         var btnPausarRootMode = "P"
         btnPausar.setOnClickListener {
             if (btnPausarRootMode == "P") {
-                BluetoothClient(this@MenuGravacao, patientDevice, "2")
+                mBluetoothConnection!!.write("2".toByteArray(Charset.defaultCharset()))
                 btnPausar.text = "Continuar"
                 btnPausarRootMode = "C"
             } else if (btnPausarRootMode == "C"){
-                BluetoothClient(this@MenuGravacao, patientDevice, "3")
+                mBluetoothConnection!!.write("3".toByteArray(Charset.defaultCharset()))
                 btnPausar.text = "Pausar"
                 btnPausarRootMode = "P"
             }
         }
 
         btnParar.setOnClickListener {
-            BluetoothClient(this@MenuGravacao, patientDevice, "0")
+            mBluetoothConnection!!.write("0".toByteArray(Charset.defaultCharset()))
         }
     }
 
@@ -247,6 +322,10 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     }
 
     public fun pararGravacao(){
+        if (recmode == "R" && bluetoothConnected){
+            mBluetoothConnection!!.cancel()
+        }
+
         val intentSender = Intent(applicationContext, MainActivity::class.java)
         intentSender.putExtra("act_name", "MenuGravacao")
         startActivity(intentSender)
@@ -256,6 +335,18 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     override fun onDestroy(){
         handler.removeCallbacksAndMessages(null)
         sensorManagerRec.unregisterListener(this)
+
+        if (recmode == "R"){
+            if (broadcastsRegistered[0])
+                unregisterReceiver(mBroadcastReceiver1)
+            if (broadcastsRegistered[1])
+                unregisterReceiver(mBroadcastReceiver2)
+            if (broadcastsRegistered[2])
+                unregisterReceiver(mBroadcastReceiver3)
+            if (broadcastsRegistered[3])
+                unregisterReceiver(mBroadcastReceiver4)
+        }
+
         super.onDestroy()
     }
 
@@ -392,5 +483,95 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             txtEixoY.text = String.format("%.2f m/s²", accAtual.valorY).replace(',', '.')
             txtEixoZ.text = String.format("%.2f m/s²", accAtual.valorZ).replace(',', '.')
         }
+    }
+
+    // broadcasts
+    private val mBroadcastReceiver1 = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.getAction()
+
+            // When discovery finds a device sqr(aki)
+            if (action == BluetoothAdapter.ACTION_STATE_CHANGED){
+                val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                when (state) {
+                    BluetoothAdapter.STATE_OFF -> escreverLog("onReceive: STATE OFF")
+                    BluetoothAdapter.STATE_TURNING_OFF -> escreverLog("mBroadcastReceiver1: STATE TURNING OFF")
+                    BluetoothAdapter.STATE_ON -> escreverLog("mBroadcastReceiver1: STATE ON")
+                    BluetoothAdapter.STATE_TURNING_ON -> escreverLog("mBroadcastReceiver1: STATE TURNING ON")
+                }
+            }
+        }
+    }
+
+    private val mBroadcastReceiver2 = object : BroadcastReceiver() {
+        override fun onReceive (context: Context, intent: Intent) {
+            val action = intent.getAction()
+            if (action == BluetoothAdapter.ACTION_SCAN_MODE_CHANGED){
+                val mode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.ERROR)
+                when (mode) {
+                    //Device is in Discoverable Mode
+                    BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE -> escreverLog("mBroadcastReceiver2: Discoverability Enabled.")
+                    //Device not in discoverable mode
+                    BluetoothAdapter.SCAN_MODE_CONNECTABLE -> escreverLog("mBroadcastReceiver2: Discoverability Disabled. Able to receive connections.")
+                    BluetoothAdapter.SCAN_MODE_NONE -> escreverLog("mBroadcastReceiver2: Discoverability Disabled. Not able to receive connections.")
+                    BluetoothAdapter.STATE_CONNECTING -> escreverLog("mBroadcastReceiver2: Connecting....")
+                    BluetoothAdapter.STATE_CONNECTED -> escreverLog("mBroadcastReceiver2: Connected.")
+                }
+            }
+        }
+    }
+
+    private val mBroadcastReceiver3 = object : BroadcastReceiver() {
+        override fun onReceive (context: Context, intent: Intent) {
+            val action = intent.getAction()
+            escreverLog("onReceive: ACTION FOUND.")
+            if (action == BluetoothDevice.ACTION_FOUND){
+                val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as BluetoothDevice
+                listDevices += device
+                escreverLog("onReceive: ${device.name}: ${device.address}")
+            }
+        }
+    }
+
+    private val mBroadcastReceiver4 = object : BroadcastReceiver() {
+        override fun onReceive (context: Context, intent: Intent) {
+            val action = intent.getAction()
+            if (action == BluetoothDevice.ACTION_BOND_STATE_CHANGED){
+                val mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as BluetoothDevice
+                
+                // Case 1: bonded already
+                if (mDevice.getBondState() === BluetoothDevice.BOND_BONDED){
+                    escreverLog("BroadcastReceiver: BOND_BONDED.")
+                    myDevice = mDevice
+                }
+                // Case 2: creating a bond
+                if (mDevice.getBondState() === BluetoothDevice.BOND_BONDING){
+                    escreverLog("BroadcastReceiver: BOND_BONDING.")
+                }
+                // Case 3: Breaking a bond
+                if (mDevice.getBondState() === BluetoothDevice.BOND_NONE){
+                    escreverLog("BroadcastReceiver: BOND_NONE.")
+                }
+            }
+        }
+    }
+
+    // verifica permissoes de bluetooth
+    private fun checkBTPermissions() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+            var permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION")
+            permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION")
+            if (permissionCheck != 0){
+                this.requestPermissions(arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 1001) //Any number
+            }
+        }
+        else {
+            escreverLog("checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.")
+        }
+    }
+
+    companion object {
+        private val TAG = "MainActivity"
+        private val MY_UUID_INSECURE = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
     }
 }

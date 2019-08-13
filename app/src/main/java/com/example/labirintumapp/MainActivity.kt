@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
     private lateinit var txtEixoX: TextView
     private lateinit var txtEixoY: TextView      
     private lateinit var txtEixoZ: TextView      
-    private lateinit var btnIniciar: TextView      
+    private lateinit var btnIniciar: TextView
     private lateinit var mainLayout: RelativeLayout 
 
     private lateinit var sensorManager: SensorManager

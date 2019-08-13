@@ -178,7 +178,7 @@
                 android:paddingBottom="20dp"
                 android:textAllCaps="true"
                 android:textStyle="bold"
-
+                android:foreground="?attr/selectableItemBackground"
                 android:layout_weight="1"
                 android:textSize="20sp"/>
 
@@ -192,6 +192,7 @@
                 android:paddingBottom="20dp"
                 android:textAllCaps="true"
                 android:textStyle="bold"
+                android:foreground="?attr/selectableItemBackground"
                 android:layout_weight="1"
                 android:textSize="20sp"/>
     </LinearLayout>
