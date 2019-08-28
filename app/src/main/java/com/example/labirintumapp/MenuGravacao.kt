@@ -220,7 +220,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
         startActivity(discoverableIntent)
-        // aki
+        // 
         val intentFilter = IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
         registerReceiver(mBroadcastReceiver2, intentFilter)
         broadcastsRegistered[1] = true
@@ -362,7 +362,8 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         handler.postDelayed(object : Runnable {
             override fun run() {
                 atualizarLista()
-                escreverCSV()
+                escreverCSV(accAtual)
+                
                 handler.postDelayed(this, delay.toLong())
             }
         }, delay.toLong())
@@ -416,7 +417,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         tabelaDados.addView(row)
     }
 
-    private fun escreverCSV(){
+    private fun escreverCSV(acc: Acelerometro){
         try {
             val writer = FileWriter(filepath, !header)
             if (header){
@@ -424,14 +425,42 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                 header = false
             }
 
-            val dadosList = arrayOf(accAtual.horario,
-                String.format("%.2f", accAtual.valorX).replace(',', '.'),
-                String.format("%.2f", accAtual.valorY).replace(',', '.'),
-                String.format("%.2f", accAtual.valorZ).replace(',', '.'))
+            val dadosList = arrayOf(acc.horario,
+                String.format("%.2f", acc.valorX).replace(',', '.'),
+                String.format("%.2f", acc.valorY).replace(',', '.'),
+                String.format("%.2f", acc.valorZ).replace(',', '.'))
 
-            val stringData = dadosList.joinToString(",")
+            val stringData = dadosList.joinToString(",") + '\n'
             writer.append(stringData)
-            writer.append('\n')
+            writer.close()
+
+            if (recmode == "R" && usertype == "user")
+            mBluetoothConnection!!.write(stringData.toByteArray(Charset.defaultCharset()))
+
+            if (maxLinesOn) {
+                lineCont += 1
+                if (lineCont == maxlines) {
+                    Toast.makeText(this, "O limite máximo de" +
+                         " gravação foi atingido!", Toast.LENGTH_LONG).show()
+                    pararGravacao()
+                }
+            }
+
+        } catch (e: Exception) {
+            Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
+            e.printStackTrace()
+        }
+    }
+
+    public fun escreverCSV(msg: String){
+        try {
+            val writer = FileWriter(filepath, !header)
+            if (header){
+                writer.append("HORARIO,EIXO X,EIXO Y,EIXO Z\n")
+                header = false
+            }
+
+            writer.append(msg)
             writer.close()
 
             if (maxLinesOn) {
@@ -443,9 +472,9 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                 }
             }
 
-        } catch (erMsg: Exception) {
-            Toast.makeText(this, erMsg.toString(), Toast.LENGTH_LONG).show()
-            erMsg.printStackTrace()
+        } catch (e: Exception) {
+            Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
+            e.printStackTrace()
         }
     }
 
@@ -490,7 +519,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.getAction()
 
-            // When discovery finds a device sqr(aki)
+            // When discovery finds a device
             if (action == BluetoothAdapter.ACTION_STATE_CHANGED){
                 val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
                 when (state) {
@@ -548,7 +577,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                 if (mDevice.getBondState() === BluetoothDevice.BOND_BONDING){
                     escreverLog("BroadcastReceiver: BOND_BONDING.")
                 }
-                // Case 3: Breaking a bond
+                // Case 3: breaking a bond
                 if (mDevice.getBondState() === BluetoothDevice.BOND_NONE){
                     escreverLog("BroadcastReceiver: BOND_NONE.")
                 }

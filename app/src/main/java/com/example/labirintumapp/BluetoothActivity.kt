@@ -212,21 +212,24 @@ public class BluetoothConnectionService (act: MenuGravacao){
                         val incomingMessage = String(buffer, 0, bytes)
                         escreverLog("InputStream: $incomingMessage")
 
-                        when (incomingMessage) {
+                        when (incomingMessage){
                             "1" -> this@BluetoothConnectionService.activity.iniciarGravacao()
                             "2" -> this@BluetoothConnectionService.activity.pausarGravacao()
                             "3" -> this@BluetoothConnectionService.activity.retomarGravacao()
                             "0" -> this@BluetoothConnectionService.activity.pararGravacao()
+                            else -> {
+                                this@BluetoothConnectionService.activity.escreverCSV(incomingMessage)
+                            }
                         }
                     } else SystemClock.sleep(100)
-                } catch (e: IOException) {
+                } catch (e: IOException){
                     cancel()
                 }
             }
         }
 
         //Call this from the main activity to send data to the remote device
-        fun write(bytes: ByteArray) {
+        public fun write(bytes: ByteArray) {
             val text = String(bytes, Charset.defaultCharset())
             escreverLog("write: Writing to outputstream: " + text)
             
@@ -238,7 +241,7 @@ public class BluetoothConnectionService (act: MenuGravacao){
         }
 
         // Call this from the main activity to shutdown the connection
-        fun cancel() {
+        public fun cancel() {
             try { mmSocket!!.close()
             } catch (e: IOException) { }
         }
@@ -252,7 +255,7 @@ public class BluetoothConnectionService (act: MenuGravacao){
         mConnectedThread.start()
     }
 
-    fun write (outMsg: ByteArray) {
+    fun write(outMsg: ByteArray) {
         val r: ConnectedThread
         escreverLog("write: Write Called.")
 
