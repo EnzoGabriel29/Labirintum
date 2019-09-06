@@ -23,6 +23,11 @@ import android.preference.PreferenceManager
 import android.content.Context
 import java.io.File
 import android.os.Environment
+import android.view.View
+import androidx.core.app.ActivityCompat
+import android.content.pm.PackageManager
+import android.Manifest
+import androidx.core.content.ContextCompat
 
 fun isNumerico(str: String): Boolean {
     try {
@@ -41,69 +46,77 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
     private lateinit var btnIniciar: TextView
     private lateinit var mainLayout: RelativeLayout 
 
-    private lateinit var sensorManager: SensorManager
-    private var firstIter: Boolean = false
-    private var eixoX0: Double = 0.0
-    private var eixoY0: Double = 0.0
-    private var eixoZ0: Double = 0.0
-    private var eixoX: Double = 0.0
-    private var eixoY: Double = 0.0
-    private var eixoZ: Double = 0.0
+    private lateinit var appSensorManager: SensorManager
+    private var flagInit = false
+    private var eixoX0 = 0.0
+    private var eixoY0 = 0.0
+    private var eixoZ0 = 0.0
+    private var eixoX = 0.0
+    private var eixoY = 0.0
+    private var eixoZ = 0.0
 
-    private var maxlines: Int    = 0
-    private var recdelay: Int    = 0
-    private var filetype: String = "0"
+    private var numLinhasMaximo = 0
+    private var intervaloGravacao = 0
+    private var extensaoArquivo = ""
+
+    companion object {
+        private val MY_PERMISSIONS_REQUEST_WRITE = 1;
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_principal)
-        txtEixoX = findViewById(R.id.txtEixoX)
-        txtEixoY = findViewById(R.id.txtEixoY)
-        txtEixoZ = findViewById(R.id.txtEixoZ)
-        btnIniciar = findViewById(R.id.btnIniciar)
-        mainLayout = findViewById(R.id.main_layout)
+        this.txtEixoX = findViewById(R.id.txtEixoX)
+        this.txtEixoY = findViewById(R.id.txtEixoY)
+        this.txtEixoZ = findViewById(R.id.txtEixoZ)
+        this.btnIniciar = findViewById(R.id.btnIniciar)
+        this.mainLayout = findViewById(R.id.main_layout)
 
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        val ds = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        sensorManager.registerListener(this, ds, SensorManager.SENSOR_DELAY_NORMAL)
+        this.appSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
 
-        btnIniciar.setOnClickListener {
-            val bSetFilename = AlertDialog.Builder(this)
-            bSetFilename.setTitle("Qual é o nome do arquivo?")
+        this.appSensorManager.registerListener(this, 
+            this.appSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL)
 
-            val input = EditText(this)
-            val lp2 = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT)
-            input.layoutParams = lp2
-            input.hint = "Insira o nome do arquivo"
-            bSetFilename.setView(input, 20, 0, 20, 0)
+        this.btnIniciar.setOnClickListener(object : View.OnClickListener {
+            override public fun onClick(v: View) {
+                val bDefineNomeArquivo = AlertDialog.Builder(this@MainActivity)
+                bDefineNomeArquivo.setTitle("Qual é o nome do arquivo?")
 
-            bSetFilename.setPositiveButton("Iniciar", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, id: Int) {
-                    var filename = input.text.toString()
-                    iniciarGravacao(getSavePath(filename), "N")
-                }
-            })
-            bSetFilename.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, which: Int) {
-                    dialog.cancel()
-                }
-            })
-            bSetFilename.show()
-        }
+                val input = EditText(this@MainActivity)
+                val lp2 = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT)
+                input.layoutParams = lp2
+                input.hint = "Insira o nome do arquivo"
+                bDefineNomeArquivo.setView(input, 20, 0, 20, 0)
 
-        updateDefaults()
+                bDefineNomeArquivo.setPositiveButton("Iniciar", object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, id: Int) {
+                        var nomeArquivo = input.text.toString()
+                        val diretorioGravacao = this@MainActivity.geraDiretorioGravacao(nomeArquivo)
+                        this@MainActivity.iniciarGravacao(diretorioGravacao, MenuGravacao.MODO_PADRAO)
+                    }
+                })
+                bDefineNomeArquivo.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, which: Int) {
+                        dialog.cancel()
+                    }
+                })
+                bDefineNomeArquivo.show()
+            }
+        })
+
+        this.atualizaPadroes()
     }
 
-    private fun updateDefaults(){
-        val intentReceiver = intent
-        if (intentReceiver == null) return
+    private fun atualizaPadroes(){
+        val intentRecebido = intent
+        if (intentRecebido == null) return
 
         val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
         val prefEditor = pref.edit()
 
-        // se o aplicativo esta sendo executado pela primeira vez
         if (pref.getBoolean("first_run", true)) {
             prefEditor.putBoolean("first_run", false)
             prefEditor.putInt("max_lines", 120)
@@ -113,65 +126,71 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
             return
         }
 
-        // se algum dado foi salvo na activity 'MenuSettings'
-        if (intentReceiver.getStringExtra("act_name") == "MenuSettings"){
-            if (intentReceiver.getStringExtra("user_action") == "salvar"){
-                prefEditor.putInt("max_lines", intentReceiver.getStringExtra("max_lines").toInt())
-                prefEditor.putInt("rec_delay", intentReceiver.getStringExtra("rec_delay").toInt())
-                prefEditor.putString("file_type", intentReceiver.getStringExtra("file_type"))
+        if (intentRecebido.getStringExtra("act_name") == "MenuSettings"){
+            if (intentRecebido.getStringExtra("user_action") == "salvar"){
+                prefEditor.putInt("max_lines", intentRecebido.getStringExtra("max_lines").toInt())
+                prefEditor.putInt("rec_delay", intentRecebido.getStringExtra("rec_delay").toInt())
+                prefEditor.putString("file_type", intentRecebido.getStringExtra("file_type"))
                 prefEditor.commit()
             }
         }
 
-        maxlines = pref.getInt("max_lines", 120)
-        recdelay = pref.getInt("rec_delay", 500)
-        filetype = pref.getString("file_type", "csv") ?: return
+        numLinhasMaximo = pref.getInt("max_lines", 120)
+        intervaloGravacao = pref.getInt("rec_delay", 500)
+        extensaoArquivo = pref.getString("file_type", "csv") ?: return
     }
 
     override fun onResume(){
         super.onResume()
-        val ds = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        sensorManager.registerListener(this, ds, SensorManager.SENSOR_DELAY_NORMAL)
 
-        updateDefaults()
+        this.appSensorManager.registerListener(this, 
+            appSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL)
+
+        this.atualizaPadroes()
     }
 
     override fun onPause(){
         super.onPause()
-        sensorManager.unregisterListener(this)
+        appSensorManager.unregisterListener(this)
     }
 
     override fun onDestroy(){
         super.onDestroy()
-        sensorManager.unregisterListener(this)
+        appSensorManager.unregisterListener(this)
     }
 
-    private fun getSavePath(fname: String): String {
-        var filename = fname
-        val parentDir = "${Environment.getExternalStorageDirectory().path}/AccelerometerSaveData"
+    private fun geraDiretorioGravacao(nomeArq: String): String {
+        var nomeArquivo = nomeArq
+        val diretorioPai = "${Environment.getExternalStorageDirectory().path}/AccelerometerSaveData"
         var intCont = 0
         var strCont = ""
-        val sufixo = filename.takeLast(2)
+        val sufixo = nomeArquivo.takeLast(2)
 
-        if (filename.endsWith(filetype))
-            filename.dropLast(filetype.length)
+        if (nomeArquivo.endsWith(extensaoArquivo))
+            nomeArquivo.dropLast(extensaoArquivo.length)
 
         if (isNumerico(sufixo)) {
             intCont = sufixo.toInt()
             strCont = "-%02d".format(intCont)
-            filename = filename.dropLastWhile{ it.isDigit() }
-            filename = filename.dropLast(1)
+            nomeArquivo = nomeArquivo.dropLastWhile{ it.isDigit() }
+            nomeArquivo = nomeArquivo.dropLast(1)
         }
 
-        var filepath: String
-        while (true) {
-            filepath = "$parentDir/$filename$strCont.$filetype"
-            var fileObj = File(filepath)
+        val pasta = File(diretorioPai)
+        if (!pasta.exists()){
+            pasta.mkdirs()
+        }
 
-            if (fileObj.isFile()){
+        var diretorioArquivo: String
+        while (true) {
+            diretorioArquivo = "${diretorioPai}/${nomeArquivo}${strCont}.${extensaoArquivo}"
+            var arquivo = File(diretorioArquivo)
+
+            if (arquivo.isFile()){
                 intCont += 1
                 strCont = "-%02d".format(intCont)
-            } else return filepath
+            } else return diretorioArquivo
         }
     }
 
@@ -182,22 +201,25 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         val eixoY1 = event.values[1].toDouble()
         val eixoZ1 = event.values[2].toDouble()
 
-        if (!firstIter){
-            eixoX0 = eixoX1; eixoY0 = eixoY1; eixoZ0 = eixoZ1
-            firstIter = true
+        if (!this.flagInit){
+            this.eixoX0 = eixoX1
+            this.eixoY0 = eixoY1
+            this.eixoZ0 = eixoZ1
+            
+            this.flagInit = true
         }
         else{
-            eixoX = Math.abs(eixoX0 - eixoX1)
-            eixoY = Math.abs(eixoY0 - eixoY1)
-            eixoZ = Math.abs(eixoZ0 - eixoZ1)
+            this.eixoX = Math.abs(this.eixoX0 - eixoX1)
+            this.eixoY = Math.abs(this.eixoY0 - eixoY1)
+            this.eixoZ = Math.abs(this.eixoZ0 - eixoZ1)
 
-            eixoX0 = eixoX1
-            eixoY0 = eixoY1
-            eixoZ0 = eixoZ1
+            this.eixoX0 = eixoX1
+            this.eixoY0 = eixoY1
+            this.eixoZ0 = eixoZ1
 
-            txtEixoX.text = String.format("%.2f m/s²", eixoX).replace(',', '.')
-            txtEixoY.text = String.format("%.2f m/s²", eixoY).replace(',', '.')
-            txtEixoZ.text = String.format("%.2f m/s²", eixoZ).replace(',', '.')
+            this.txtEixoX.text = String.format("%.2f m/s²", this.eixoX).replace(',', '.')
+            this.txtEixoY.text = String.format("%.2f m/s²", this.eixoY).replace(',', '.')
+            this.txtEixoZ.text = String.format("%.2f m/s²", this.eixoZ).replace(',', '.')
         }
     }
 
@@ -208,38 +230,65 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_settings -> defineSettingsLayout()
-            R.id.action_remote   -> defineRemoteLayout()
+            R.id.action_settings -> defineLayoutConfiguracoes()
+            R.id.action_remote -> defineLayoutRemoto()
         }
 
         return true
     }
 
-    private fun iniciarGravacao(fname: String, gmode: String){
-        val intent = Intent(applicationContext, MenuGravacao::class.java)
-        intent.putExtra("act_name", "MainActivity")
-        intent.putExtra("file_path", fname)
-        intent.putExtra("rec_mode", gmode)
-        intent.putExtra("file_type", filetype)
-        intent.putExtra("max_lines", maxlines)
-        intent.putExtra("rec_delay", recdelay)
-        sensorManager.unregisterListener(this)
-        startActivity(intent)
-        finish()
+    private fun iniciarGravacao(diretorioArquivo: String, modoGravacao: Int){
+        if (isPermissaoEscrita()){
+            val intent = Intent(applicationContext, MenuGravacao::class.java)
+            intent.putExtra("act_name", "MainActivity")
+            intent.putExtra("file_path", diretorioArquivo)
+            intent.putExtra("rec_mode", modoGravacao)
+            intent.putExtra("file_type", this.extensaoArquivo)
+            intent.putExtra("max_lines", this.numLinhasMaximo)
+            intent.putExtra("rec_delay", this.intervaloGravacao)
+            this.appSensorManager.unregisterListener(this)
+            this.startActivity(intent)
+            this.finish()
+        } else verificarPermissaoEscrita()
     }
 
-    private fun defineRemoteLayout(){
+    private fun defineLayoutRemoto(){
         Toast.makeText(this, "O modo remoto foi ativado!", Toast.LENGTH_SHORT).show()
-        mainLayout.removeView(btnIniciar)
-        iniciarGravacao(getSavePath("bluetoothRec"), "R")
+        mainLayout.removeView(this.btnIniciar)
+        val diretorioGravacao = this.geraDiretorioGravacao("bluetoothRec")
+        this.iniciarGravacao(diretorioGravacao, MenuGravacao.MODO_REMOTO)
     }
 
-    private fun defineSettingsLayout(){
+    private fun defineLayoutConfiguracoes(){
         val intent = Intent(applicationContext, MenuSettings::class.java)
         intent.putExtra("act_name", "MainActivity")
-        intent.putExtra("file_type", filetype.toString())
-        intent.putExtra("max_lines", maxlines.toString())
-        intent.putExtra("rec_delay", recdelay.toString())
-        startActivity(intent)
+        intent.putExtra("file_type", this.extensaoArquivo.toString())
+        intent.putExtra("max_lines", this.numLinhasMaximo.toString())
+        intent.putExtra("rec_delay", this.intervaloGravacao.toString())
+        this.startActivity(intent)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            MY_PERMISSIONS_REQUEST_WRITE -> {
+                if (!(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    Toast.makeText(this, "Não foi possível ativar a " + 
+                        "funcionalidade de escrita.", Toast.LENGTH_LONG).show()
+                    return
+                }
+            }
+
+            else -> { }       
+        }
+    }
+
+    private fun isPermissaoEscrita(): Boolean {
+        var permissaoEscrita = Manifest.permission.WRITE_EXTERNAL_STORAGE
+        return ContextCompat.checkSelfPermission(this, permissaoEscrita) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun verificarPermissaoEscrita(){
+        ActivityCompat.requestPermissions(this, arrayOf(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_REQUEST_WRITE)
     }
 }
