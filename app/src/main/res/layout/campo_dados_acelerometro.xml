@@ -1,27 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_marginBottom="15dp"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content" android:id="@+id/layout_campo">
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_marginBottom="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/layout_campo">
 
     <TextView
-            android:text="DD/MM HH:MM:SS"
+            android:text="0"
             android:textAlignment="center"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/txtHorario" android:layout_weight="1"/>
+            android:layout_height="wrap_content"
+            android:id="@+id/txtDuracao"
+            android:layout_weight="1"/>
+
     <TextView
             android:text="0,00"
             android:textAlignment="center"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/txtValorX" android:layout_weight="1"/>
+            android:layout_height="wrap_content"
+            android:id="@+id/txtValor"
+            android:layout_weight="1"/>
+
     <TextView
             android:text="0,00"
             android:textAlignment="center"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/txtValorY" android:layout_weight="1"/>
+            android:layout_height="wrap_content"
+            android:id="@+id/txtValor"
+            android:layout_weight="1"/>
+
     <TextView
             android:text="0,00"
             android:textAlignment="center"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/txtValorZ" android:layout_weight="1"/>
+            android:layout_height="wrap_content"
+            android:id="@+id/txtValor"
+            android:layout_weight="1"/>
+
+    <TextView
+            android:text="0,00"
+            android:textAlignment="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtValor"
+            android:layout_weight="1"/>
+
+    <TextView
+            android:text="0,00"
+            android:textAlignment="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtValor"
+            android:layout_weight="1"/>
+
+    <TextView
+            android:text="0,00"
+            android:textAlignment="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtValor"
+            android:layout_weight="1"/>
+
 </LinearLayout>

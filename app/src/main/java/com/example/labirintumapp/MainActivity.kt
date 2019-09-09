@@ -1,16 +1,10 @@
 package com.example.labirintumapp
 
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Handler
@@ -39,21 +33,10 @@ fun isNumerico(str: String): Boolean {
 }
 
 
-class MainActivity : AppCompatActivity() , SensorEventListener {
-    private lateinit var txtEixoX: TextView
-    private lateinit var txtEixoY: TextView      
-    private lateinit var txtEixoZ: TextView      
-    private lateinit var btnIniciar: TextView
+class MainActivity : AppCompatActivity() {    
+    private lateinit var btnIniciar: Button
+    private lateinit var btnConfigs: Button
     private lateinit var mainLayout: RelativeLayout 
-
-    private lateinit var appSensorManager: SensorManager
-    private var flagInit = false
-    private var eixoX0 = 0.0
-    private var eixoY0 = 0.0
-    private var eixoZ0 = 0.0
-    private var eixoX = 0.0
-    private var eixoY = 0.0
-    private var eixoZ = 0.0
 
     private var numLinhasMaximo = 0
     private var intervaloGravacao = 0
@@ -63,22 +46,19 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         private val MY_PERMISSIONS_REQUEST_WRITE = 1;
     }
     
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_principal)
-        this.txtEixoX = findViewById(R.id.txtEixoX)
-        this.txtEixoY = findViewById(R.id.txtEixoY)
-        this.txtEixoZ = findViewById(R.id.txtEixoZ)
-        this.btnIniciar = findViewById(R.id.btnIniciar)
-        this.mainLayout = findViewById(R.id.main_layout)
 
-        this.appSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        if (!isPermissaoEscrita()){
+            verificarPermissaoEscrita()
+        }
 
-        this.appSensorManager.registerListener(this, 
-            this.appSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL)
+        btnIniciar = findViewById(R.id.btnIniciar)
+        btnConfigs = findViewById(R.id.btnConfigs)
+        mainLayout = findViewById(R.id.main_layout)
 
-        this.btnIniciar.setOnClickListener(object : View.OnClickListener {
+        btnIniciar.setOnClickListener(object : View.OnClickListener {
             override public fun onClick(v: View) {
                 val bDefineNomeArquivo = AlertDialog.Builder(this@MainActivity)
                 bDefineNomeArquivo.setTitle("Qual é o nome do arquivo?")
@@ -107,7 +87,13 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
             }
         })
 
-        this.atualizaPadroes()
+        btnConfigs.setOnClickListener(object : View.OnClickListener {
+            override public fun onClick(v: View) {
+                defineLayoutConfiguracoes()
+            }
+        })
+
+        atualizaPadroes()
     }
 
     private fun atualizaPadroes(){
@@ -120,7 +106,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         if (pref.getBoolean("first_run", true)) {
             prefEditor.putBoolean("first_run", false)
             prefEditor.putInt("max_lines", 120)
-            prefEditor.putInt("rec_delay", 500)
+            prefEditor.putInt("rec_delay", 200)
             prefEditor.putString("file_type", "csv")
             prefEditor.commit()
             return
@@ -136,28 +122,13 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         }
 
         numLinhasMaximo = pref.getInt("max_lines", 120)
-        intervaloGravacao = pref.getInt("rec_delay", 500)
+        intervaloGravacao = pref.getInt("rec_delay", 200)
         extensaoArquivo = pref.getString("file_type", "csv") ?: return
     }
 
     override fun onResume(){
         super.onResume()
-
-        this.appSensorManager.registerListener(this, 
-            appSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL)
-
         this.atualizaPadroes()
-    }
-
-    override fun onPause(){
-        super.onPause()
-        appSensorManager.unregisterListener(this)
-    }
-
-    override fun onDestroy(){
-        super.onDestroy()
-        appSensorManager.unregisterListener(this)
     }
 
     private fun geraDiretorioGravacao(nomeArq: String): String {
@@ -194,35 +165,6 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         }
     }
 
-    override fun onAccuracyChanged(arg0: Sensor, arg1: Int){ }
-
-    override fun onSensorChanged(event: SensorEvent){
-        val eixoX1 = event.values[0].toDouble()
-        val eixoY1 = event.values[1].toDouble()
-        val eixoZ1 = event.values[2].toDouble()
-
-        if (!this.flagInit){
-            this.eixoX0 = eixoX1
-            this.eixoY0 = eixoY1
-            this.eixoZ0 = eixoZ1
-            
-            this.flagInit = true
-        }
-        else{
-            this.eixoX = Math.abs(this.eixoX0 - eixoX1)
-            this.eixoY = Math.abs(this.eixoY0 - eixoY1)
-            this.eixoZ = Math.abs(this.eixoZ0 - eixoZ1)
-
-            this.eixoX0 = eixoX1
-            this.eixoY0 = eixoY1
-            this.eixoZ0 = eixoZ1
-
-            this.txtEixoX.text = String.format("%.2f m/s²", this.eixoX).replace(',', '.')
-            this.txtEixoY.text = String.format("%.2f m/s²", this.eixoY).replace(',', '.')
-            this.txtEixoZ.text = String.format("%.2f m/s²", this.eixoZ).replace(',', '.')
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
@@ -230,7 +172,6 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_settings -> defineLayoutConfiguracoes()
             R.id.action_remote -> defineLayoutRemoto()
         }
 
@@ -246,17 +187,20 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
             intent.putExtra("file_type", this.extensaoArquivo)
             intent.putExtra("max_lines", this.numLinhasMaximo)
             intent.putExtra("rec_delay", this.intervaloGravacao)
-            this.appSensorManager.unregisterListener(this)
-            this.startActivity(intent)
-            this.finish()
-        } else verificarPermissaoEscrita()
+            startActivity(intent)
+            finish()
+
+        } else {
+            Toast.makeText(this, "Não foi possível começar a gravação: " +
+                "o aplicativo não tem permissões suficientes.", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun defineLayoutRemoto(){
         Toast.makeText(this, "O modo remoto foi ativado!", Toast.LENGTH_SHORT).show()
-        mainLayout.removeView(this.btnIniciar)
-        val diretorioGravacao = this.geraDiretorioGravacao("bluetoothRec")
-        this.iniciarGravacao(diretorioGravacao, MenuGravacao.MODO_REMOTO)
+        mainLayout.removeView(btnIniciar)
+        val diretorioGravacao = geraDiretorioGravacao("bluetoothRec")
+        iniciarGravacao(diretorioGravacao, MenuGravacao.MODO_REMOTO)
     }
 
     private fun defineLayoutConfiguracoes(){
@@ -265,7 +209,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         intent.putExtra("file_type", this.extensaoArquivo.toString())
         intent.putExtra("max_lines", this.numLinhasMaximo.toString())
         intent.putExtra("rec_delay", this.intervaloGravacao.toString())
-        this.startActivity(intent)
+        startActivity(intent)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -283,8 +227,9 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
     }
 
     private fun isPermissaoEscrita(): Boolean {
-        var permissaoEscrita = Manifest.permission.WRITE_EXTERNAL_STORAGE
-        return ContextCompat.checkSelfPermission(this, permissaoEscrita) == PackageManager.PERMISSION_GRANTED
+        return (ContextCompat.checkSelfPermission(this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE) == 
+            PackageManager.PERMISSION_GRANTED)
     }
 
     private fun verificarPermissaoEscrita(){

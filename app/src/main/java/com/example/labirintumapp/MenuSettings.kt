@@ -10,6 +10,10 @@ import android.widget.TextView
 import android.widget.CompoundButton
 import android.widget.Button
 import android.widget.Toast
+import android.widget.ArrayAdapter
+import android.widget.AdapterView
+import android.widget.Spinner
+import android.view.View
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -24,20 +28,52 @@ class MenuSettings : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_settings)
 
-        val edtRecDelay = findViewById<EditText>(R.id.edtIntervalo)
+        val spnRecDelay = findViewById<Spinner>(R.id.delaySpinner)
         val rdgFileType = findViewById<RadioGroup>(R.id.cgpFormatArq)
         val edtMaxLines = findViewById<EditText>(R.id.edtNumMaxLinhas)
         val swtMaxLines = findViewById<Switch>(R.id.switchStopRecording)
         val txtMaxLines = findViewById<TextView>(R.id.txtSwitchStopRecording)
-        val btnSalvar = findViewById<Button>(R.id.btnSalvar)
-        val btnCancelar = findViewById<Button>(R.id.btnCancelar)
+        val btnSalvar = findViewById<TextView>(R.id.btnSalvar)
+        val btnCancelar = findViewById<TextView>(R.id.btnCancelar)
 
         val intentReceiver = intent
         var filetype = intentReceiver.getStringExtra("file_type")
         var maxlines = intentReceiver.getStringExtra("max_lines")
         var recdelay = intentReceiver.getStringExtra("rec_delay")
 
-        edtRecDelay.setText(recdelay)
+        val arrayDelays = arrayOf<String>(
+            "Delay normal (200 milissegundos)",
+            "Delay acima do normal (100 milissegundos)",
+            "Delay rápido (60 milissegundos)",
+            "Delay ultrarrápido (20 milissegundos)")
+
+        val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayDelays);  
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); 
+        spnRecDelay.setAdapter(aa);
+
+        when (recdelay){
+            "200" -> spnRecDelay.setSelection(0)
+            "100" -> spnRecDelay.setSelection(1)
+            "60" -> spnRecDelay.setSelection(2)
+            "20" -> spnRecDelay.setSelection(3)
+        }
+
+        spnRecDelay.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(av: AdapterView<*>?, v: View, pos: Int, id: Long){
+                recdelay = when (pos){
+                    0 -> "200"
+                    1 -> "100"
+                    2 -> "60"
+                    3 -> "20"
+                    else -> "0"
+                }
+            }
+
+            override fun onNothingSelected(av: AdapterView<*>?){
+
+            }
+        })
+
         edtMaxLines.setText(maxlines)
 
         when (filetype){
@@ -56,22 +92,23 @@ class MenuSettings : AppCompatActivity() {
 
         if (maxlines == "0"){
             swtMaxLines.isChecked = false
-            txtMaxLines.text = "Ativar recurso"
+            txtMaxLines.text = "Recurso desativado"
             edtMaxLines.isEnabled = false
+
         } else {
             swtMaxLines.isChecked = true
-            txtMaxLines.text = "Desativar recurso"
+            txtMaxLines.text = "Recurso ativado"
             edtMaxLines.isEnabled = true
             edtMaxLines.setText(maxlines)
         }
         swtMaxLines.setOnCheckedChangeListener(object : CompoundButton.OnCheckedChangeListener {
             override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
                 if (isChecked){
-                    txtMaxLines.text = "Desativar recurso"
+                    txtMaxLines.text = "Recurso ativado"
                     edtMaxLines.isEnabled = true
                 }
                 else {
-                    txtMaxLines.text = "Ativar recurso"
+                    txtMaxLines.text = "Recurso desativado"
                     edtMaxLines.isEnabled = false
                 }
             }
@@ -80,7 +117,6 @@ class MenuSettings : AppCompatActivity() {
         btnSalvar.setOnClickListener {
             val intentSender = Intent(applicationContext, MainActivity::class.java)
             maxlines = if (edtMaxLines.isEnabled) edtMaxLines.text.toString() else "0"
-            recdelay = edtRecDelay.text.toString()
             intentSender.putExtra("act_name", "MenuSettings")
             intentSender.putExtra("user_action", "salvar")
             intentSender.putExtra("file_type", filetype)

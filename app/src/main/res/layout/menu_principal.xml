@@ -8,99 +8,68 @@
     android:id="@+id/main_layout"
     tools:context=".MainActivity">
 
-    <TextView
-        android:text="Eixo X"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtView1"
-        android:layout_marginTop="20sp"
-        android:layout_marginLeft="20sp"
-        android:layout_marginStart="20sp"
-        android:textSize="30sp"
-        android:textAllCaps="true"
-        android:textStyle="bold"
-        android:textColor="@android:color/holo_red_dark"/>
+    <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"  
+            android:maxWidth="300dp"  
+            android:maxHeight="300dp"  
+            android:scaleType="fitCenter"  
+            android:layout_marginLeft="3dp" 
+            android:src="@drawable/app_icon"
+            android:layout_centerHorizontal="true"
+            android:paddingTop="50dp"/>
 
-    <TextView
-        android:text="0.00 m/s²"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtEixoX"
-        android:layout_below="@id/txtView1"
-        android:layout_marginLeft="20sp"
-        android:layout_marginStart="20sp"
-        android:textSize="40sp"
-        android:textColor="@android:color/black"/>
-
-    <TextView
-        android:text="Eixo Y"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtView2"
-        android:layout_below="@id/txtEixoX"
-        android:layout_marginTop="20sp"
-        android:layout_marginLeft="20sp"
-        android:layout_marginStart="20sp"
-        android:textSize="30sp"
-        android:textAllCaps="true"
-        android:textStyle="bold"
-        android:textColor="@android:color/holo_blue_dark"/>
-
-    <TextView
-        android:text="0.00 m/s²"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtEixoY"
-        android:layout_below="@id/txtView2"
-        android:layout_marginLeft="20sp"
-        android:layout_marginStart="20sp"
-        android:textSize="40sp"
-        android:textColor="@android:color/black"/>
-
-    <TextView
-        android:text="Eixo Z"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtView3"
-        android:layout_below="@id/txtEixoY"
-        android:layout_marginTop="20sp"
-        android:layout_marginLeft="20sp"
-        android:layout_marginStart="20sp"
-        android:textSize="30sp"
-        android:textAllCaps="true"
-        android:textStyle="bold"
-        android:textColor="@android:color/holo_green_dark"/>
-
-    <TextView
-        android:text="0.00 m/s²"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtEixoZ"
-        android:layout_below="@id/txtView3"
-        android:layout_marginLeft="20sp"
-        android:layout_marginStart="20sp"
-        android:textSize="40sp"
-        android:textColor="@android:color/black"/>
-
-    <Button
-        android:text="Iniciar"
+    <LinearLayout
+        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/btnIniciar"
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
+        android:orientation="vertical">
 
-        android:clickable="true"
-        android:focusable="true"
-        android:longClickable="true"
+        <Button
+            android:text="Iniciar gravação"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnIniciar"
+            android:gravity="center"
 
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp"
-        android:textAllCaps="true"
-        android:textStyle="bold"
-        android:foreground="?attr/selectableItemBackground"
-        android:background="@drawable/rectangle"
-        android:textSize="20sp"/>
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:textAllCaps="true"
+            android:textStyle="bold"
+            android:foreground="?attr/selectableItemBackground"
+            android:background="@drawable/rectangle"
+            android:textSize="20sp"/>
 
+        <Button
+            android:text="Configurações"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnConfigs"
+            android:gravity="center"
+
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:textAllCaps="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:background="@drawable/rectangle"
+            android:textSize="20sp"/>
+
+        <Button
+            android:text="Sobre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSobre"
+            android:gravity="center"
+
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:textAllCaps="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:background="@drawable/rectangle"
+            android:textSize="20sp"/>
+
+    </LinearLayout>
 
 </RelativeLayout>
