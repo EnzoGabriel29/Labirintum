@@ -3,6 +3,7 @@
 *.dex
 *.class
 *.iml
+*.log
 .gradle
 /local.properties
 /.idea/caches

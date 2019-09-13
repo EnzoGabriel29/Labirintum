@@ -34,6 +34,7 @@ import android.view.View
 import java.util.*
 import android.widget.*
 import android.util.Log
+import android.view.WindowManager
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
@@ -122,7 +123,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private lateinit var appSensorManager: SensorManager
     private lateinit var bluetoothConnector: BluetoothConnector
     
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_gravacao)
 
@@ -155,7 +156,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
         var modoBtnPausar = BOTAO_PAUSAR
         btnPausar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View) {
+            override public fun onClick(v: View){
                 if (modoBtnPausar == BOTAO_PAUSAR){
                     this@MenuGravacao.pausarGravacao()
                     modoBtnPausar = BOTAO_CONTINUAR
@@ -189,7 +190,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                     "o recurso de Bluetooth.", Toast.LENGTH_LONG).show()
                 pararGravacao()
 
-            } else if (!adaptadorBluetooth.isEnabled) {
+            } else if (!adaptadorBluetooth.isEnabled){
                 val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
             }
@@ -200,7 +201,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             bEscolheUsuario.setTitle("Qual dispositivo você está usando?")
             bEscolheUsuario.setCancelable(false)
             bEscolheUsuario.setItems(modosUsuario, object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, which: Int) {
+                override fun onClick(dialog: DialogInterface, which: Int){
                     tipoUsuario = if (which == 0) USER_TERAPEUTA else USER_PACIENTE
 
                     if (tipoUsuario == USER_TERAPEUTA){
@@ -215,7 +216,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                 }
             })
             bEscolheUsuario.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, which: Int) {
+                override fun onClick(dialog: DialogInterface, which: Int){
                     dialog.cancel()
                     pararGravacao()
                 }
@@ -223,8 +224,8 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             bEscolheUsuario.show()
         }
 
-        handler = object : Handler(Looper.getMainLooper()) {
-            override fun handleMessage(msg: Message) {
+        handler = object : Handler(Looper.getMainLooper()){
+            override fun handleMessage(msg: Message){
                 when (msg.what){
                     HANDLER_TOAST -> {
                         val stringRecebida = msg.obj as String
@@ -240,14 +241,14 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         super.onDestroy()
     }
 
-    public inner class TaskProgresso : AsyncTask<Void, Void?, Void?>() {
+    public inner class TaskProgresso : AsyncTask<Void, Void?, Void?>(){
         override protected fun onPreExecute(){
             if (builder == null){
                 builder = AlertDialog.Builder(this@MenuGravacao)
                 builder!!.setTitle("Aguardando conexão com outro dispositivo...")
                 builder!!.setCancelable(false)
                 builder!!.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int) {
+                    override fun onClick(dialog: DialogInterface, which: Int){
                         bluetoothConnector.cancelaDescoberta()
                         dialog.cancel()
                         pararGravacao()
@@ -292,7 +293,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         bEscolhePareados.setTitle("Dispositivos pareados")
         bEscolhePareados.setCancelable(false)
         bEscolhePareados.setItems(nomesDispositivos, object : DialogInterface.OnClickListener {
-            override fun onClick(dialog: DialogInterface, which: Int) {
+            override fun onClick(dialog: DialogInterface, which: Int){
                 bluetoothConnector.iniciaPaciente(dispositivos[which], true)
 
                 TaskProgresso().execute()
@@ -302,7 +303,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             }
         })
         bEscolhePareados.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-            override fun onClick(dialog: DialogInterface, which: Int) {
+            override fun onClick(dialog: DialogInterface, which: Int){
                 dialog.cancel()
                 pararGravacao()
             }
@@ -313,22 +314,30 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private fun criaLayoutPadrao(){
         iniciarGravacao()
         btnParar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View) {
+            override public fun onClick(v: View){
                 this@MenuGravacao.pararGravacao()
             }
         })
     }
 
     private fun criaLayoutPaciente(){
-        recLayout.removeView(conLayout)
-        recLayout.removeView(btnPausar)
-        recLayout.removeView(btnParar)
+        recLayout.removeAllViews()
+
+        val textoEspera = TextView(this)
+        textoEspera.setText("Os dados estão sendo\nenviados ao seu terapeuta.");
+        val rllp = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT)
+        textoEspera.layoutParams = rllp
+        textoEspera.gravity = Gravity.CENTER  
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)  
     }
 
     private fun criaLayoutTerapeuta(){
         var btnPausarTerapeuta = BOTAO_PAUSAR
         btnPausar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View) {
+            override public fun onClick(v: View){
                 if (btnPausarTerapeuta == BOTAO_PAUSAR){
                     btnPausar.text = "Continuar"
                     btnPausarTerapeuta = BOTAO_CONTINUAR
@@ -343,7 +352,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         })
 
         btnParar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View) {
+            override public fun onClick(v: View){
                 this@MenuGravacao.bluetoothConnector.enviaMensagem("0")
                 this@MenuGravacao.pararGravacao()
             }
@@ -355,12 +364,14 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             Toast.makeText(this, "O registro dos dados foi iniciado! " +
                     "O arquivo será salvo em $diretorioArquivo.", Toast.LENGTH_LONG).show()
 
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         sensorAtual.atualizaValoresAcc(accEixoX, accEixoY, accEixoZ)
         sensorAtual.atualizaValoresGir(girEixoX, girEixoY, girEixoZ)
         flagPararGravacao = false
     }
 
     public fun pararGravacao(){
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         flagPararGravacao = true
 
         try {
@@ -482,8 +493,8 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         else if (this.modoGravacao == MODO_REMOTO && this.tipoUsuario == USER_PACIENTE)
             bluetoothConnector.enviaMensagem(stringValores)
         
-        if (this.isLimiteLinhas) {
-            if (++this.linhasRegistradas == this.numLinhasMaximo) {
+        if (this.isLimiteLinhas){
+            if (++this.linhasRegistradas == this.numLinhasMaximo){
                 val message = Message()
                 message.what = HANDLER_TOAST
                 message.obj = "O limite máximo de gravação foi atingido!"
@@ -508,7 +519,17 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     public fun escreverCSV(msg: String){
         this.linhasPreGravadas += msg
 
-        if (this.isLimiteLinhas) {
+        val camposString = msg.split(",")
+        val camposDouble = Array(7){ camposString[it].toDouble() }
+        val pontoX = camposDouble[0] / 40
+        seriesEixos[0].appendData(DataPoint(pontoX, camposDouble[1]), true, 40)
+        seriesEixos[1].appendData(DataPoint(pontoX, camposDouble[2]), true, 40)
+        seriesEixos[2].appendData(DataPoint(pontoX, camposDouble[3]), true, 40)
+        seriesEixos[3].appendData(DataPoint(pontoX, camposDouble[4]), true, 40)
+        seriesEixos[4].appendData(DataPoint(pontoX, camposDouble[5]), true, 40)
+        seriesEixos[5].appendData(DataPoint(pontoX, camposDouble[6]), true, 40)
+
+        if (this.isLimiteLinhas){
             if (++this.linhasRegistradas == this.numLinhasMaximo){
                 val message = Message()
                 message.what = HANDLER_TOAST
@@ -582,7 +603,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         }
     }
 
-    override protected fun onActivityResult(requestCode: Int, resultCode: Int, dataInt: Intent?) {
+    override protected fun onActivityResult(requestCode: Int, resultCode: Int, dataInt: Intent?){
         if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_CANCELED){
             Toast.makeText(this, "Para prosseguir, é necessário " +
                 "que o recurso de Bluetooth seja ativado.", Toast.LENGTH_LONG).show()

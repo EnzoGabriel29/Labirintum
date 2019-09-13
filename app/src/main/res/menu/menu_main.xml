@@ -5,9 +5,9 @@
       tools:context=".MainActivity">
 
     <item
-            android:id="@+id/action_remote"
-            android:orderInCategory="100"
-            android:title="Ativar Modo Remoto"
-            app:showAsAction="never" />
+        android:id="@+id/action_remote"
+        android:orderInCategory="100"
+        android:title="Ativar Modo Remoto"
+        app:showAsAction="never" />
 
 </menu>

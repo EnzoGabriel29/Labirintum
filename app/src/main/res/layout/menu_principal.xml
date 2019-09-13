@@ -8,68 +8,116 @@
     android:id="@+id/main_layout"
     tools:context=".MainActivity">
 
-    <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"  
-            android:maxWidth="300dp"  
-            android:maxHeight="300dp"  
-            android:scaleType="fitCenter"  
-            android:layout_marginLeft="3dp" 
-            android:src="@drawable/app_icon"
-            android:layout_centerHorizontal="true"
-            android:paddingTop="50dp"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="60dp">
+        
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:orientation="horizontal"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="10dp">
 
-    <LinearLayout
-        android:layout_alignParentBottom="true"
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:id="@+id/btnConfigs"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/item_menu"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/icon_settings"
+                        android:layout_gravity="center"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Opções"
+                        android:textColor="@android:color/black"
+                        android:textAllCaps="true"
+                        android:textSize="18sp"
+                        android:layout_gravity="center"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:id="@+id/btnIniciar"
+                    android:padding="10dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/item_menu"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/icon_play"
+                        android:layout_gravity="center"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/black"
+                        android:text="Iniciar"
+                        android:layout_gravity="center"/>
+                        
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:padding="10dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/item_menu"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/icon_info"
+                        android:layout_gravity="center"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sobre"
+                        android:textAllCaps="true"
+                        android:textColor="@android:color/black"
+                        android:textSize="18sp"
+                        android:layout_gravity="center"/>
+                        
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    <Button
+        android:id="@+id/btnRegistros"
+        android:text="Registros anteriores"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <Button
-            android:text="Iniciar gravação"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnIniciar"
-            android:gravity="center"
-
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
-            android:textAllCaps="true"
-            android:textStyle="bold"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@drawable/rectangle"
-            android:textSize="20sp"/>
-
-        <Button
-            android:text="Configurações"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnConfigs"
-            android:gravity="center"
-
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
-            android:textAllCaps="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@drawable/rectangle"
-            android:textSize="20sp"/>
-
-        <Button
-            android:text="Sobre"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnSobre"
-            android:gravity="center"
-
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
-            android:textAllCaps="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@drawable/rectangle"
-            android:textSize="20sp"/>
-
-    </LinearLayout>
+        android:layout_height="60dp"
+        android:textSize="18sp"
+        android:background="@drawable/rectangle"
+        android:foreground="?attr/selectableItemBackground"
+        android:layout_alignParentBottom="true"/>
 
 </RelativeLayout>

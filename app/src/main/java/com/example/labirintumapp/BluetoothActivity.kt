@@ -24,7 +24,6 @@ class BluetoothConnector(private val activity: MenuGravacao) {
     private var mConnectedThread: ConnectedThread? = null
     
     companion object {
-        private val TAG = "LABIRINTUMAPP"
         private val NAME_SECURE = "BluetoothSecure"
         private val NAME_INSECURE = "BluetoothInsecure"
         private val MY_UUID_SECURE = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66")

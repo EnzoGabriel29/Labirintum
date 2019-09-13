@@ -33,13 +33,17 @@ class MenuSettings : AppCompatActivity() {
         val edtMaxLines = findViewById<EditText>(R.id.edtNumMaxLinhas)
         val swtMaxLines = findViewById<Switch>(R.id.switchStopRecording)
         val txtMaxLines = findViewById<TextView>(R.id.txtSwitchStopRecording)
-        val btnSalvar = findViewById<TextView>(R.id.btnSalvar)
+        val btnSalvar =   findViewById<TextView>(R.id.btnSalvar)
         val btnCancelar = findViewById<TextView>(R.id.btnCancelar)
 
         val intentReceiver = intent
-        var filetype = intentReceiver.getStringExtra("file_type")
-        var maxlines = intentReceiver.getStringExtra("max_lines")
-        var recdelay = intentReceiver.getStringExtra("rec_delay")
+        val filetype = intentReceiver.getStringExtra("file_type")
+        val maxlines = intentReceiver.getStringExtra("max_lines")
+        val recdelay = intentReceiver.getStringExtra("rec_delay")
+        
+        var newFiletype = filetype
+        var newMaxlines = maxlines
+        var newRecdelay = recdelay
 
         val arrayDelays = arrayOf<String>(
             "Delay normal (200 milissegundos)",
@@ -60,7 +64,7 @@ class MenuSettings : AppCompatActivity() {
 
         spnRecDelay.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(av: AdapterView<*>?, v: View, pos: Int, id: Long){
-                recdelay = when (pos){
+                newRecdelay = when (pos){
                     0 -> "200"
                     1 -> "100"
                     2 -> "60"
@@ -74,8 +78,6 @@ class MenuSettings : AppCompatActivity() {
             }
         })
 
-        edtMaxLines.setText(maxlines)
-
         when (filetype){
             "csv" -> rdgFileType.check(R.id.chkCSV)
             "txt" -> rdgFileType.check(R.id.chkTXT)
@@ -84,12 +86,13 @@ class MenuSettings : AppCompatActivity() {
             override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
                 val rb = findViewById<RadioButton>(checkedId)
                 when (rb.text.toString()) {
-                    "Formato .csv" -> filetype = "csv"
-                    "Formato .txt" -> filetype = "txt"
+                    "Formato .csv" -> newFiletype = "csv"
+                    "Formato .txt" -> newFiletype = "txt"
                 }
             }
         })
 
+        edtMaxLines.setText(maxlines)
         if (maxlines == "0"){
             swtMaxLines.isChecked = false
             txtMaxLines.text = "Recurso desativado"
@@ -116,40 +119,50 @@ class MenuSettings : AppCompatActivity() {
 
         btnSalvar.setOnClickListener {
             val intentSender = Intent(applicationContext, MainActivity::class.java)
-            maxlines = if (edtMaxLines.isEnabled) edtMaxLines.text.toString() else "0"
+            newMaxlines = if (edtMaxLines.isEnabled) edtMaxLines.text.toString() else "0"
             intentSender.putExtra("act_name", "MenuSettings")
             intentSender.putExtra("user_action", "salvar")
-            intentSender.putExtra("file_type", filetype)
-            intentSender.putExtra("max_lines", maxlines)
-            intentSender.putExtra("rec_delay", recdelay)
+            intentSender.putExtra("file_type", newFiletype)
+            intentSender.putExtra("max_lines", newMaxlines)
+            intentSender.putExtra("rec_delay", newRecdelay)
             startActivity(intentSender)
             Toast.makeText(this, "As alterações foram salvas com sucesso!", Toast.LENGTH_SHORT).show()
             finish()
         }
 
-        btnCancelar.setOnClickListener { 
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Deseja cancelar?")
-            builder.setMessage("As alterações feitas não serão salvas.")
+        btnCancelar.setOnClickListener {
+            newMaxlines = if (edtMaxLines.isEnabled) edtMaxLines.text.toString() else "0"
+            if (newFiletype != filetype || newRecdelay != recdelay || newMaxlines != maxlines){
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Deseja cancelar?")
+                builder.setMessage("As alterações feitas não serão salvas.")
 
-            builder.setPositiveButton("Continuar", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, which: Int) {
-                    val intentSender = Intent(applicationContext, MainActivity::class.java)
-                    intentSender.putExtra("act_name", "MenuSettings")
-                    intentSender.putExtra("user_action", "cancelar")
-                    startActivity(intentSender)
-                    dialog.dismiss()
-                    finish()
-                }
-            })
+                builder.setPositiveButton("Continuar", object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, which: Int) {
+                        val intentSender = Intent(applicationContext, MainActivity::class.java)
+                        intentSender.putExtra("act_name", "MenuSettings")
+                        intentSender.putExtra("user_action", "cancelar")
+                        startActivity(intentSender)
+                        dialog.dismiss()
+                        finish()
+                    }
+                })
 
-            builder.setNegativeButton("Voltar", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, which: Int) {
-                    dialog.dismiss()
-                }
-            })
+                builder.setNegativeButton("Voltar", object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, which: Int) {
+                        dialog.dismiss()
+                    }
+                })
+                
+                builder.create().show()
             
-            builder.create().show()            
+            } else {
+                val intentSender = Intent(applicationContext, MainActivity::class.java)
+                intentSender.putExtra("act_name", "MenuSettings")
+                intentSender.putExtra("user_action", "cancelar")
+                startActivity(intentSender)
+                finish()
+            }          
         }
     }
 

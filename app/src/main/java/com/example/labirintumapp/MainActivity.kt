@@ -32,10 +32,12 @@ fun isNumerico(str: String): Boolean {
     }
 }
 
+const val TAG = "LABIRINTUMAPP"
 
-class MainActivity : AppCompatActivity() {    
-    private lateinit var btnIniciar: Button
-    private lateinit var btnConfigs: Button
+class MainActivity : AppCompatActivity(){
+    private lateinit var btnRegistros: Button
+    private lateinit var btnIniciar: LinearLayout
+    private lateinit var btnConfigs: LinearLayout
     private lateinit var mainLayout: RelativeLayout 
 
     private var numLinhasMaximo = 0
@@ -56,6 +58,7 @@ class MainActivity : AppCompatActivity() {
 
         btnIniciar = findViewById(R.id.btnIniciar)
         btnConfigs = findViewById(R.id.btnConfigs)
+        btnRegistros = findViewById(R.id.btnRegistros)
         mainLayout = findViewById(R.id.main_layout)
 
         btnIniciar.setOnClickListener(object : View.OnClickListener {
@@ -90,6 +93,13 @@ class MainActivity : AppCompatActivity() {
         btnConfigs.setOnClickListener(object : View.OnClickListener {
             override public fun onClick(v: View) {
                 defineLayoutConfiguracoes()
+            }
+        })
+
+        btnRegistros.setOnClickListener(object : View.OnClickListener {
+            override public fun onClick(v: View) {
+                val intent = Intent(applicationContext, MenuRegistros::class.java)
+                startActivity(intent)
             }
         })
 
@@ -133,7 +143,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun geraDiretorioGravacao(nomeArq: String): String {
         var nomeArquivo = nomeArq
-        val diretorioPai = "${Environment.getExternalStorageDirectory().path}/AccelerometerSaveData"
+        val diretorioPai = "${Environment.getExternalStorageDirectory().path}/LabirintumDados"
         var intCont = 0
         var strCont = ""
         val sufixo = nomeArquivo.takeLast(2)
