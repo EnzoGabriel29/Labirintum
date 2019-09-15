@@ -1,27 +1,27 @@
 package com.example.labirintumapp
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import androidx.appcompat.app.AlertDialog
+import android.Manifest
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.os.Handler
-import android.util.Log
-import android.view.Gravity
-import android.widget.*
-import java.util.*
-import android.os.Build
-import android.preference.PreferenceManager
-import android.content.Context
-import java.io.File
-import android.os.Environment
-import android.view.View
-import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
-import android.Manifest
+import android.os.Bundle
+import android.os.Environment
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.File
+import java.util.*
 
 fun isNumerico(str: String): Boolean {
     try {
@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity(){
 
     private var numLinhasMaximo = 0
     private var intervaloGravacao = 0
+    private var graficosVisiveis = 0
     private var extensaoArquivo = ""
 
     companion object {
@@ -113,27 +114,29 @@ class MainActivity : AppCompatActivity(){
         val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
         val prefEditor = pref.edit()
 
-        if (pref.getBoolean("first_run", true)) {
-            prefEditor.putBoolean("first_run", false)
-            prefEditor.putInt("max_lines", 120)
-            prefEditor.putInt("rec_delay", 200)
-            prefEditor.putString("file_type", "csv")
+        if (pref.getBoolean("KEY_PRIMEIRA_EXECUCAO", true)) {
+            prefEditor.putBoolean("KEY_PRIMEIRA_EXECUCAO", false)
+            prefEditor.putInt("KEY_NUM_MAX_LINHAS", 120)
+            prefEditor.putInt("KEY_DELAY_GRAVACAO", 200)
+            prefEditor.putString("KEY_EXTENSAO_ARQUIVO", "csv")
+            prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", 3)
             prefEditor.commit()
             return
         }
 
-        if (intentRecebido.getStringExtra("act_name") == "MenuSettings"){
-            if (intentRecebido.getStringExtra("user_action") == "salvar"){
-                prefEditor.putInt("max_lines", intentRecebido.getStringExtra("max_lines").toInt())
-                prefEditor.putInt("rec_delay", intentRecebido.getStringExtra("rec_delay").toInt())
-                prefEditor.putString("file_type", intentRecebido.getStringExtra("file_type"))
-                prefEditor.commit()
-            }
+        if (intentRecebido.getStringExtra("KEY_NOME_ACTIVITY") == "MenuSettings"
+        && intentRecebido.getStringExtra("KEY_ACAO_USUARIO") == "salvar"){
+            prefEditor.putInt("KEY_NUM_MAX_LINHAS", intentRecebido.getStringExtra("KEY_NUM_MAX_LINHAS").toInt())
+            prefEditor.putInt("KEY_DELAY_GRAVACAO", intentRecebido.getStringExtra("KEY_DELAY_GRAVACAO").toInt())
+            prefEditor.putString("KEY_EXTENSAO_ARQUIVO", intentRecebido.getStringExtra("KEY_EXTENSAO_ARQUIVO"))
+            prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", intentRecebido.getStringExtra("KEY_GRAFICOS_VISIVEIS").toInt())
+            prefEditor.commit()
         }
 
-        numLinhasMaximo = pref.getInt("max_lines", 120)
-        intervaloGravacao = pref.getInt("rec_delay", 200)
-        extensaoArquivo = pref.getString("file_type", "csv") ?: return
+        numLinhasMaximo = pref.getInt("KEY_NUM_MAX_LINHAS", 120)
+        intervaloGravacao = pref.getInt("KEY_DELAY_GRAVACAO", 200)
+        graficosVisiveis = pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)
+        extensaoArquivo = pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ?: "csv"
     }
 
     override fun onResume(){
@@ -146,17 +149,9 @@ class MainActivity : AppCompatActivity(){
         val diretorioPai = "${Environment.getExternalStorageDirectory().path}/LabirintumDados"
         var intCont = 0
         var strCont = ""
-        val sufixo = nomeArquivo.takeLast(2)
 
         if (nomeArquivo.endsWith(extensaoArquivo))
             nomeArquivo.dropLast(extensaoArquivo.length)
-
-        if (isNumerico(sufixo)) {
-            intCont = sufixo.toInt()
-            strCont = "-%02d".format(intCont)
-            nomeArquivo = nomeArquivo.dropLastWhile{ it.isDigit() }
-            nomeArquivo = nomeArquivo.dropLast(1)
-        }
 
         val pasta = File(diretorioPai)
         if (!pasta.exists()){
@@ -170,7 +165,7 @@ class MainActivity : AppCompatActivity(){
 
             if (arquivo.isFile()){
                 intCont += 1
-                strCont = "-%02d".format(intCont)
+                strCont = " (%02d)".format(intCont)
             } else return diretorioArquivo
         }
     }
@@ -191,12 +186,13 @@ class MainActivity : AppCompatActivity(){
     private fun iniciarGravacao(diretorioArquivo: String, modoGravacao: Int){
         if (isPermissaoEscrita()){
             val intent = Intent(applicationContext, MenuGravacao::class.java)
-            intent.putExtra("act_name", "MainActivity")
-            intent.putExtra("file_path", diretorioArquivo)
-            intent.putExtra("rec_mode", modoGravacao)
-            intent.putExtra("file_type", this.extensaoArquivo)
-            intent.putExtra("max_lines", this.numLinhasMaximo)
-            intent.putExtra("rec_delay", this.intervaloGravacao)
+            intent.putExtra("KEY_NOME_ACTIVITY", "MainActivity")
+            intent.putExtra("KEY_DIRETORIO_ARQUIVO", diretorioArquivo)
+            intent.putExtra("KEY_MODO_GRAVACAO", modoGravacao)
+            intent.putExtra("KEY_EXTENSAO_ARQUIVO", this.extensaoArquivo)
+            intent.putExtra("KEY_NUM_MAX_LINHAS", this.numLinhasMaximo)
+            intent.putExtra("KEY_DELAY_GRAVACAO", this.intervaloGravacao)
+            intent.putExtra("KEY_GRAFICOS_VISIVEIS", this.graficosVisiveis)
             startActivity(intent)
             finish()
 
@@ -215,10 +211,11 @@ class MainActivity : AppCompatActivity(){
 
     private fun defineLayoutConfiguracoes(){
         val intent = Intent(applicationContext, MenuSettings::class.java)
-        intent.putExtra("act_name", "MainActivity")
-        intent.putExtra("file_type", this.extensaoArquivo.toString())
-        intent.putExtra("max_lines", this.numLinhasMaximo.toString())
-        intent.putExtra("rec_delay", this.intervaloGravacao.toString())
+        intent.putExtra("KEY_NOME_ACTIVITY", "MainActivity")
+        intent.putExtra("KEY_EXTENSAO_ARQUIVO", this.extensaoArquivo.toString())
+        intent.putExtra("KEY_NUM_MAX_LINHAS", this.numLinhasMaximo.toString())
+        intent.putExtra("KEY_DELAY_GRAVACAO", this.intervaloGravacao.toString())
+        intent.putExtra("KEY_GRAFICOS_VISIVEIS", this.graficosVisiveis.toString())
         startActivity(intent)
     }
 
@@ -244,6 +241,7 @@ class MainActivity : AppCompatActivity(){
 
     private fun verificarPermissaoEscrita(){
         ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_REQUEST_WRITE)
+            Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            MY_PERMISSIONS_REQUEST_WRITE)
     }
 }

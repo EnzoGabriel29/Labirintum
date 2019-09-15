@@ -25,107 +25,265 @@
                 android:paddingBottom="10dp"
                 android:id="@+id/layoutGraphs">
 
-                <TextView
-                    android:text="Eixo X - Acelerômetro"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:textSize="15sp"/>
+                    android:orientation="vertical"
+                    android:padding="5dp">
 
-                <com.jjoe64.graphview.helper.GraphViewXML
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    app:seriesData="0=0"
-                    android:id="@+id/graphAccEixoX"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp">
 
-                <TextView
-                    android:text="Eixo Y - Acelerômetro"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:textSize="15sp"/>
+                        <TextView
+                            android:text="Eixo X"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textAllCaps="true"
+                            android:textSize="20sp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="10dp"
+                            android:paddingEnd="10dp"/>
 
-                <com.jjoe64.graphview.helper.GraphViewXML
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    app:seriesData="0=0"
-                    android:id="@+id/graphAccEixoY"/>
+                        <TextView
+                            android:text="Acelerômetro"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="15sp"/>
 
-                <TextView
-                    android:text="Eixo Z - Acelerômetro"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:textSize="15sp"/>
+                    </LinearLayout>
 
-                <com.jjoe64.graphview.helper.GraphViewXML
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    app:seriesData="0=0"
-                    android:id="@+id/graphAccEixoZ"/>
+                    <com.jjoe64.graphview.helper.GraphViewXML
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp"
+                        android:paddingLeft="20dp"
+                        android:paddingRight="20dp"
+                        app:seriesData="0=0"
+                        android:id="@+id/graphAccEixoX"/>
 
-                <TextView
-                    android:text="Eixo X - Giroscópio"
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:textSize="15sp"/>
+                    android:orientation="vertical"
+                    android:padding="5dp">
 
-                <com.jjoe64.graphview.helper.GraphViewXML
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    app:seriesData="0=0"
-                    android:id="@+id/graphGirEixoX"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp">
 
-                <TextView
-                    android:text="Eixo Y - Giroscópio"
+                        <TextView
+                            android:text="Eixo Y"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textAllCaps="true"
+                            android:textSize="20sp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="10dp"
+                            android:paddingEnd="10dp"/>
+
+                        <TextView
+                            android:text="Acelerômetro"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                    <com.jjoe64.graphview.helper.GraphViewXML
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp"
+                        android:paddingLeft="20dp"
+                        android:paddingStart="20dp"
+                        android:paddingRight="20dp"
+                        android:paddingEnd="20dp"
+                        app:seriesData="0=0"
+                        android:id="@+id/graphAccEixoY"/>
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:textSize="15sp"/>
+                    android:orientation="vertical"
+                    android:padding="5dp">
 
-                <com.jjoe64.graphview.helper.GraphViewXML
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    app:seriesData="0=0"
-                    android:id="@+id/graphGirEixoY"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp">
 
-                <TextView
-                    android:text="Eixo Z - Giroscópio"
+                        <TextView
+                            android:text="Eixo Z"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textAllCaps="true"
+                            android:textSize="20sp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="10dp"
+                            android:paddingEnd="10dp"/>
+
+                        <TextView
+                            android:text="Acelerômetro"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                    <com.jjoe64.graphview.helper.GraphViewXML
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp"
+                        android:paddingLeft="20dp"
+                        android:paddingRight="20dp"
+                        app:seriesData="0=0"
+                        android:id="@+id/graphAccEixoZ"/>
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:textSize="15sp"/>
+                    android:orientation="vertical"
+                    android:padding="5dp">
 
-                <com.jjoe64.graphview.helper.GraphViewXML
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp">
+
+                        <TextView
+                            android:text="Eixo X"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textAllCaps="true"
+                            android:textSize="20sp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="10dp"
+                            android:paddingEnd="10dp"/>
+
+                        <TextView
+                            android:text="Giroscópio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                    <com.jjoe64.graphview.helper.GraphViewXML
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp"
+                        android:paddingLeft="20dp"
+                        android:paddingRight="20dp"
+                        app:seriesData="0=0"
+                        android:id="@+id/graphGirEixoX"/>
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    app:seriesData="0=0"
-                    android:id="@+id/graphGirEixoZ"/>
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp">
+
+                        <TextView
+                            android:text="Eixo Y"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textAllCaps="true"
+                            android:textSize="20sp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="10dp"
+                            android:paddingEnd="10dp"/>
+
+                        <TextView
+                            android:text="Giroscópio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                    <com.jjoe64.graphview.helper.GraphViewXML
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp"
+                        android:paddingLeft="20dp"
+                        android:paddingRight="20dp"
+                        app:seriesData="0=0"
+                        android:id="@+id/graphGirEixoY"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp">
+
+                        <TextView
+                            android:text="Eixo Z"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textAllCaps="true"
+                            android:textSize="20sp"
+                            android:paddingLeft="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingRight="10dp"
+                            android:paddingEnd="10dp"/>
+
+                        <TextView
+                            android:text="Giroscópio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                    <com.jjoe64.graphview.helper.GraphViewXML
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp"
+                        android:paddingLeft="20dp"
+                        android:paddingRight="20dp"
+                        app:seriesData="0=0"
+                        android:id="@+id/graphGirEixoZ"/>
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -135,7 +293,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:paddingTop="10dp"
                 android:paddingBottom="10dp"
                 android:textSize="20sp"
                 android:textStyle="bold"

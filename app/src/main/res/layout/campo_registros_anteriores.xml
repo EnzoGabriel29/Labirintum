@@ -7,19 +7,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/cardViewLayout"
-    android:padding="10dp"
     android:background="@drawable/shadow_background">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/cardViewArquivo" >
+        android:id="@+id/cardViewArquivo"
+        android:foreground="?attr/selectableItemBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="5dp" >
+            android:padding="10dp" >
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -55,14 +55,8 @@
                 android:paddingStart="10dp"
                 android:paddingRight="10dp"
                 android:paddingEnd="10dp"
+                android:paddingBottom="10dp"
                 android:id="@+id/txtDataModificado" />
-
-            <com.jjoe64.graphview.helper.GraphViewXML
-                android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:padding="20dp"
-                app:seriesData="0=0"
-                android:id="@+id/graphDadosArquivo" />
 
         </LinearLayout>
 

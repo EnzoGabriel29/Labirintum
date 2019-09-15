@@ -2,6 +2,7 @@ package com.example.labirintumapp
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.RadioButton
@@ -33,17 +34,21 @@ class MenuSettings : AppCompatActivity() {
         val edtMaxLines = findViewById<EditText>(R.id.edtNumMaxLinhas)
         val swtMaxLines = findViewById<Switch>(R.id.switchStopRecording)
         val txtMaxLines = findViewById<TextView>(R.id.txtSwitchStopRecording)
-        val btnSalvar =   findViewById<TextView>(R.id.btnSalvar)
+        val chkGraficoAcc = findViewById<CheckBox>(R.id.checkboxAcc)
+        val chkGraficoGir = findViewById<CheckBox>(R.id.checkboxGir)
+        val btnSalvar = findViewById<TextView>(R.id.btnSalvar)
         val btnCancelar = findViewById<TextView>(R.id.btnCancelar)
 
-        val intentReceiver = intent
-        val filetype = intentReceiver.getStringExtra("file_type")
-        val maxlines = intentReceiver.getStringExtra("max_lines")
-        val recdelay = intentReceiver.getStringExtra("rec_delay")
+        val intentRecebido = intent
+        val filetype = intentRecebido.getStringExtra("KEY_EXTENSAO_ARQUIVO")
+        val maxlines = intentRecebido.getStringExtra("KEY_NUM_MAX_LINHAS")
+        val recdelay = intentRecebido.getStringExtra("KEY_DELAY_GRAVACAO")
+        val graphvis = intentRecebido.getStringExtra("KEY_GRAFICOS_VISIVEIS")
         
         var newFiletype = filetype
         var newMaxlines = maxlines
         var newRecdelay = recdelay
+        var newGraphvis = graphvis
 
         val arrayDelays = arrayOf<String>(
             "Delay normal (200 milissegundos)",
@@ -117,14 +122,40 @@ class MenuSettings : AppCompatActivity() {
             }
         })
 
+        when (graphvis){
+            "0" -> {
+                chkGraficoAcc.setChecked(false)
+                chkGraficoGir.setChecked(false)
+            }
+
+            "1" -> {
+                chkGraficoAcc.setChecked(true)
+                chkGraficoGir.setChecked(false)
+            }
+
+            "2" -> {
+                chkGraficoAcc.setChecked(false)
+                chkGraficoGir.setChecked(true)
+            }
+
+            "3" -> {
+                chkGraficoAcc.setChecked(true)
+                chkGraficoGir.setChecked(true)
+            }
+        }
+
         btnSalvar.setOnClickListener {
             val intentSender = Intent(applicationContext, MainActivity::class.java)
             newMaxlines = if (edtMaxLines.isEnabled) edtMaxLines.text.toString() else "0"
-            intentSender.putExtra("act_name", "MenuSettings")
-            intentSender.putExtra("user_action", "salvar")
-            intentSender.putExtra("file_type", newFiletype)
-            intentSender.putExtra("max_lines", newMaxlines)
-            intentSender.putExtra("rec_delay", newRecdelay)
+            val g1 = if (chkGraficoAcc.isChecked) 1 else 0
+            val g2 = if (chkGraficoGir.isChecked) 2 else 0
+            newGraphvis = (g1 + g2).toString()
+            intentSender.putExtra("KEY_NOME_ACTIVITY", "MenuSettings")
+            intentSender.putExtra("KEY_ACAO_USUARIO", "salvar")
+            intentSender.putExtra("KEY_EXTENSAO_ARQUIVO", newFiletype)
+            intentSender.putExtra("KEY_NUM_MAX_LINHAS", newMaxlines)
+            intentSender.putExtra("KEY_DELAY_GRAVACAO", newRecdelay)
+            intentSender.putExtra("KEY_GRAFICOS_VISIVEIS", newGraphvis)
             startActivity(intentSender)
             Toast.makeText(this, "As alterações foram salvas com sucesso!", Toast.LENGTH_SHORT).show()
             finish()
@@ -132,7 +163,11 @@ class MenuSettings : AppCompatActivity() {
 
         btnCancelar.setOnClickListener {
             newMaxlines = if (edtMaxLines.isEnabled) edtMaxLines.text.toString() else "0"
-            if (newFiletype != filetype || newRecdelay != recdelay || newMaxlines != maxlines){
+            val g1 = if (chkGraficoAcc.isChecked) 1 else 0
+            val g2 = if (chkGraficoGir.isChecked) 2 else 0
+            newGraphvis = (g1 + g2).toString()
+            if (newFiletype != filetype || newRecdelay != recdelay ||
+            newMaxlines != maxlines || newGraphvis != graphvis){
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Deseja cancelar?")
                 builder.setMessage("As alterações feitas não serão salvas.")
@@ -140,8 +175,8 @@ class MenuSettings : AppCompatActivity() {
                 builder.setPositiveButton("Continuar", object : DialogInterface.OnClickListener {
                     override fun onClick(dialog: DialogInterface, which: Int) {
                         val intentSender = Intent(applicationContext, MainActivity::class.java)
-                        intentSender.putExtra("act_name", "MenuSettings")
-                        intentSender.putExtra("user_action", "cancelar")
+                        intentSender.putExtra("KEY_NOME_ACTIVITY", "MenuSettings")
+                        intentSender.putExtra("KEY_ACAO_USUARIO", "cancelar")
                         startActivity(intentSender)
                         dialog.dismiss()
                         finish()
@@ -158,15 +193,14 @@ class MenuSettings : AppCompatActivity() {
             
             } else {
                 val intentSender = Intent(applicationContext, MainActivity::class.java)
-                intentSender.putExtra("act_name", "MenuSettings")
-                intentSender.putExtra("user_action", "cancelar")
+                intentSender.putExtra("KEY_NOME_ACTIVITY", "MenuSettings")
+                intentSender.putExtra("KEY_ACAO_USUARIO", "cancelar")
                 startActivity(intentSender)
                 finish()
             }          
         }
     }
 
-    // clicar fora de um EditText remove o foco sobre ele
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
             val v = currentFocus

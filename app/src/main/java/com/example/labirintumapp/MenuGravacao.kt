@@ -1,43 +1,35 @@
 package com.example.labirintumapp
 
+import android.bluetooth.BluetoothAdapter
+import android.content.DialogInterface
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
-import android.speech.RecognitionListener
-import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
-import android.view.Gravity
-import android.widget.TextView
-import android.widget.TableLayout
-import android.widget.RelativeLayout
-import android.widget.LinearLayout
-import android.os.AsyncTask
-import androidx.appcompat.app.AppCompatActivity
-import java.io.FileWriter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothAdapter
-import android.content.DialogInterface
-import androidx.appcompat.app.AlertDialog
-import android.os.Build
-import android.os.Environment
-import android.os.Message
 import android.os.Looper
-import android.Manifest
-import android.content.Context
-import android.content.IntentFilter
-import java.nio.charset.Charset
-import android.view.View
-import java.util.*
-import android.widget.*
+import android.os.Message
 import android.util.Log
+import android.view.Gravity
+import android.view.View
 import android.view.WindowManager
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
+import android.widget.TableLayout
+import android.widget.TableRow
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
+import java.io.FileWriter
+import java.util.*
 
 class SensorAndroid(){
     public var duracao = 0
@@ -68,7 +60,8 @@ class SensorAndroid(){
 class MenuGravacao : AppCompatActivity() , SensorEventListener {    
     private lateinit var tabelaDados: TableLayout
     private lateinit var recLayout: RelativeLayout
-    private lateinit var conLayout: LinearLayout 
+    private lateinit var conLayout: LinearLayout
+    private lateinit var graphLayout: LinearLayout
     private lateinit var btnPausar: TextView   
     private lateinit var btnParar: TextView
     private var graficosEixos = emptyArray<GraphView>() 
@@ -101,12 +94,16 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private var diretorioArquivo = ""
     private var extensaoArquivo = ""
     private var tipoUsuario = 0
+    private var graficosVisiveis = 0
     private var isLimiteLinhas = false
+    private var isGraficoAcc = false
+    private var isGraficoGir = false
+    private var isPausarThreads = false
+    private var isPararThreads = false
 
     private var linhasPreGravadas = arrayOf<String>("HORARIO,ACC EIXO X,ACC EIXO Y,ACC EIXO Z,GIR EIXO X,GIR EIXO Y,GIR EIXO Z")
 
     companion object {
-        private val TAG = "LABIRINTUMAPP"
         private val REQUEST_ENABLE_BT = 1
         public val MODO_PADRAO = 2
         public val MODO_REMOTO = 3
@@ -127,27 +124,50 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_gravacao)
 
+        val intentRecebido = intent
+        this.modoGravacao = intentRecebido.getIntExtra("KEY_MODO_GRAVACAO", MODO_PADRAO)
+        this.diretorioArquivo = intentRecebido.getStringExtra("KEY_DIRETORIO_ARQUIVO") ?: ""
+        this.extensaoArquivo = intentRecebido.getStringExtra("KEY_EXTENSAO_ARQUIVO") ?: ""
+        this.numLinhasMaximo = intentRecebido.getIntExtra("KEY_NUM_MAX_LINHAS", 120)
+        this.intervaloGravacao = intentRecebido.getIntExtra("KEY_DELAY_GRAVACAO", 200)
+        this.graficosVisiveis = intentRecebido.getIntExtra("KEY_GRAFICOS_VISIVEIS", 3)
+        this.isLimiteLinhas = numLinhasMaximo > 0
+
         tabelaDados = findViewById(R.id.tabelaDados)
         recLayout   = findViewById(R.id.rec_layout)
         conLayout   = findViewById(R.id.controll_layout)
+        graphLayout = findViewById(R.id.layoutGraphs)
         btnPausar   = findViewById(R.id.btnPausar)
         btnParar    = findViewById(R.id.btnParar)
 
-        graficosEixos += findViewById<GraphView>(R.id.graphAccEixoX)
-        graficosEixos += findViewById<GraphView>(R.id.graphAccEixoY)
-        graficosEixos += findViewById<GraphView>(R.id.graphAccEixoZ)
-        graficosEixos += findViewById<GraphView>(R.id.graphGirEixoX)
-        graficosEixos += findViewById<GraphView>(R.id.graphGirEixoY)
-        graficosEixos += findViewById<GraphView>(R.id.graphGirEixoZ)
+        isGraficoAcc = graficosVisiveis == 1 || graficosVisiveis == 3
+        isGraficoGir = graficosVisiveis == 2 || graficosVisiveis == 3
 
-        for (i in 0..5) seriesEixos += LineGraphSeries<DataPoint>()
+        if (isGraficoAcc){
+            graficosEixos += findViewById<GraphView>(R.id.graphAccEixoX)
+            graficosEixos += findViewById<GraphView>(R.id.graphAccEixoY)
+            graficosEixos += findViewById<GraphView>(R.id.graphAccEixoZ)
+        
+        } else graphLayout.removeViews(0, 3)
+        
 
-        for (i in 0..5){
+        if (isGraficoGir){
+            graficosEixos += findViewById<GraphView>(R.id.graphGirEixoX)
+            graficosEixos += findViewById<GraphView>(R.id.graphGirEixoY)
+            graficosEixos += findViewById<GraphView>(R.id.graphGirEixoZ)
+        
+        } else if (!isGraficoAcc) graphLayout.removeViews(0, 3)
+        else graphLayout.removeViews(3, 3)
+
+        for (i in 0 until graficosEixos.size){
+            seriesEixos += LineGraphSeries<DataPoint>()
+
             graficosEixos[i].addSeries(seriesEixos[i])
 
             graficosEixos[i].getViewport().setXAxisBoundsManual(true)
             graficosEixos[i].getViewport().setMinX(0.0)
-            graficosEixos[i].getViewport().setMaxX(40.0)
+            if (!isLimiteLinhas) graficosEixos[i].getViewport().setMaxX(40.0)
+            else graficosEixos[i].getViewport().setMaxX(numLinhasMaximo.toDouble())
 
             graficosEixos[i].getViewport().setYAxisBoundsManual(true)
             graficosEixos[i].getViewport().setMinY(0.0)
@@ -168,14 +188,6 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                 }
             }
         })
-        
-        val intentRecebido = intent
-        this.modoGravacao = intentRecebido.getIntExtra("rec_mode", MODO_PADRAO)
-        this.diretorioArquivo = intentRecebido.getStringExtra("file_path") ?: ""
-        this.extensaoArquivo = intentRecebido.getStringExtra("file_type") ?: ""
-        this.numLinhasMaximo = intentRecebido.getIntExtra("max_lines", 120)
-        this.intervaloGravacao = intentRecebido.getIntExtra("rec_delay", 200)
-        this.isLimiteLinhas = numLinhasMaximo > 0
 
         appSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         appSensorManager.registerListener(this, appSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), this.intervaloGravacao*1000)
@@ -359,6 +371,27 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         })
     }
 
+    private inner class ThreadFiltro : Thread() {
+        override fun run(){
+            var tempoInicial = System.currentTimeMillis()
+            while (true){
+                if (!isPausarThreads){
+
+                    var tempoFinal = System.currentTimeMillis()
+                    var duracao = tempoFinal - tempoInicial
+                    
+                    if (duracao > intervaloGravacao){
+                        Log.d(TAG, "ok")
+                        flagPararGravacao = false
+                        tempoInicial = tempoFinal
+                    } else flagPararGravacao = true
+                }
+
+                if (isPararThreads) break
+            }
+        }
+    }
+
     public fun iniciarGravacao(){
         if (this.modoGravacao == MODO_PADRAO)
             Toast.makeText(this, "O registro dos dados foi iniciado! " +
@@ -368,38 +401,44 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         sensorAtual.atualizaValoresAcc(accEixoX, accEixoY, accEixoZ)
         sensorAtual.atualizaValoresGir(girEixoX, girEixoY, girEixoZ)
         flagPararGravacao = false
+        isPararThreads = false
     }
 
     public fun pararGravacao(){
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         flagPararGravacao = true
+        isPararThreads = true
 
-        try {
-            val writer = FileWriter(this.diretorioArquivo, false)
-            writer.append(this.linhasPreGravadas.joinToString("\n"))
-            writer.close()
+        if (this.linhasPreGravadas.size > 1){
+            try {
+                val writer = FileWriter(this.diretorioArquivo, false)
+                writer.append(this.linhasPreGravadas.joinToString("\n"))
+                writer.close()
 
-        } catch (e: Exception){
-            val message = Message()
-            message.what = HANDLER_TOAST
-            message.obj = e.toString()
-            handler.sendMessage(message)
-            
-            e.printStackTrace()
+            } catch (e: Exception){
+                val message = Message()
+                message.what = HANDLER_TOAST
+                message.obj = e.toString()
+                handler.sendMessage(message)
+                
+                e.printStackTrace()
+            }
         }
 
         val intentSender = Intent(applicationContext, MainActivity::class.java)
-        intentSender.putExtra("act_name", "MenuGravacao")
+        intentSender.putExtra("KEY_NOME_ACTIVITY", "MenuGravacao")
         startActivity(intentSender)
         finish()
     }
 
     public fun pausarGravacao(){
         flagPararGravacao = true
+        isPausarThreads = true
     }
 
     public fun retomarGravacao(){
         flagPararGravacao = false
+        isPausarThreads = false
     }
 
     private fun atualizarTela(){
@@ -508,12 +547,27 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private fun atualizarGraficos(){
         val pontoX = sensorAtual.duracao / this.intervaloGravacao.toDouble()
 
-        seriesEixos[0].appendData(DataPoint(pontoX, sensorAtual.accValorX), true, 40)
-        seriesEixos[1].appendData(DataPoint(pontoX, sensorAtual.accValorY), true, 40)
-        seriesEixos[2].appendData(DataPoint(pontoX, sensorAtual.accValorZ), true, 40)
-        seriesEixos[3].appendData(DataPoint(pontoX, sensorAtual.girValorX), true, 40)
-        seriesEixos[4].appendData(DataPoint(pontoX, sensorAtual.girValorY), true, 40)
-        seriesEixos[5].appendData(DataPoint(pontoX, sensorAtual.girValorZ), true, 40)
+        val pontosEixoX = if (isLimiteLinhas) numLinhasMaximo else 40
+        val isGraficoFixo = isLimiteLinhas
+
+        if (isGraficoAcc && isGraficoGir){
+            seriesEixos[0].appendData(DataPoint(pontoX, sensorAtual.accValorX), !isGraficoFixo, pontosEixoX)
+            seriesEixos[1].appendData(DataPoint(pontoX, sensorAtual.accValorY), !isGraficoFixo, pontosEixoX)
+            seriesEixos[2].appendData(DataPoint(pontoX, sensorAtual.accValorZ), !isGraficoFixo, pontosEixoX)
+            seriesEixos[3].appendData(DataPoint(pontoX, sensorAtual.girValorX), !isGraficoFixo, pontosEixoX)
+            seriesEixos[4].appendData(DataPoint(pontoX, sensorAtual.girValorY), !isGraficoFixo, pontosEixoX)
+            seriesEixos[5].appendData(DataPoint(pontoX, sensorAtual.girValorZ), !isGraficoFixo, pontosEixoX)
+
+        } else if (isGraficoAcc){
+            seriesEixos[0].appendData(DataPoint(pontoX, sensorAtual.accValorX), !isGraficoFixo, pontosEixoX)
+            seriesEixos[1].appendData(DataPoint(pontoX, sensorAtual.accValorY), !isGraficoFixo, pontosEixoX)
+            seriesEixos[2].appendData(DataPoint(pontoX, sensorAtual.accValorZ), !isGraficoFixo, pontosEixoX)
+
+        } else if (isGraficoGir){
+            seriesEixos[0].appendData(DataPoint(pontoX, sensorAtual.girValorX), !isGraficoFixo, pontosEixoX)
+            seriesEixos[1].appendData(DataPoint(pontoX, sensorAtual.girValorY), !isGraficoFixo, pontosEixoX)
+            seriesEixos[2].appendData(DataPoint(pontoX, sensorAtual.girValorZ), !isGraficoFixo, pontosEixoX)
+        }
     }
 
     public fun escreverCSV(msg: String){
@@ -522,12 +576,27 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         val camposString = msg.split(",")
         val camposDouble = Array(7){ camposString[it].toDouble() }
         val pontoX = camposDouble[0] / 40
-        seriesEixos[0].appendData(DataPoint(pontoX, camposDouble[1]), true, 40)
-        seriesEixos[1].appendData(DataPoint(pontoX, camposDouble[2]), true, 40)
-        seriesEixos[2].appendData(DataPoint(pontoX, camposDouble[3]), true, 40)
-        seriesEixos[3].appendData(DataPoint(pontoX, camposDouble[4]), true, 40)
-        seriesEixos[4].appendData(DataPoint(pontoX, camposDouble[5]), true, 40)
-        seriesEixos[5].appendData(DataPoint(pontoX, camposDouble[6]), true, 40)
+        val pontosEixoX = if (isLimiteLinhas) numLinhasMaximo else 40
+        val isGraficoFixo = isLimiteLinhas
+
+        if (isGraficoAcc && isGraficoGir){
+            seriesEixos[0].appendData(DataPoint(pontoX, camposDouble[1]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[1].appendData(DataPoint(pontoX, camposDouble[2]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[2].appendData(DataPoint(pontoX, camposDouble[3]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[3].appendData(DataPoint(pontoX, camposDouble[4]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[4].appendData(DataPoint(pontoX, camposDouble[5]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[5].appendData(DataPoint(pontoX, camposDouble[6]), !isGraficoFixo, pontosEixoX)
+
+        } else if (isGraficoAcc){
+            seriesEixos[0].appendData(DataPoint(pontoX, camposDouble[1]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[1].appendData(DataPoint(pontoX, camposDouble[2]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[2].appendData(DataPoint(pontoX, camposDouble[3]), !isGraficoFixo, pontosEixoX)
+
+        } else if (isGraficoGir){
+            seriesEixos[0].appendData(DataPoint(pontoX, camposDouble[4]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[1].appendData(DataPoint(pontoX, camposDouble[5]), !isGraficoFixo, pontosEixoX)
+            seriesEixos[2].appendData(DataPoint(pontoX, camposDouble[6]), !isGraficoFixo, pontosEixoX)
+        }
 
         if (this.isLimiteLinhas){
             if (++this.linhasRegistradas == this.numLinhasMaximo){
@@ -547,7 +616,6 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         if (!flagPararGravacao){
             when (event.sensor.type){
                 Sensor.TYPE_GYROSCOPE -> {
-                    Log.d(TAG, "GYROSCOPE")
                     val girEixoX1 = event.values[0].toDouble()
                     val girEixoY1 = event.values[1].toDouble()
                     val girEixoZ1 = event.values[2].toDouble()
@@ -598,7 +666,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
             escreverCSV()
             atualizarTela()
-            atualizarGraficos()
+            if (isGraficoAcc || isGraficoGir) atualizarGraficos()
             sensorAtual.aumentaDuracao(this.intervaloGravacao)
         }
     }

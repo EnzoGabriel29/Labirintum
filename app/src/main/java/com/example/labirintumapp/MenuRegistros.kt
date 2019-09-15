@@ -23,6 +23,8 @@ import android.os.Environment
 import android.view.ViewGroup
 import android.util.Log
 import android.os.Handler
+import android.text.TextWatcher
+import android.text.Editable
 
 interface RecyclerViewClickListener {
     fun onCardClicked(pos: Int)
@@ -32,7 +34,9 @@ interface RecyclerViewClickListener {
 class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
     private var listaArquivos = emptyArray<File>()
     private var infoArquivos = arrayListOf<InfoArquivo>()
+    private var infoArquivosUI = arrayListOf<InfoArquivo>()
     private lateinit var arquivoAdapter: ArquivoAdapter
+    private lateinit var edtBuscaRegistros: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,8 +54,7 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
             val nome = arquivo.name
             val modif = SimpleDateFormat("dd/MM/yyyy, HH:mm:ss").format(arquivo.lastModified())
             val dir = arquivo.absolutePath
-            val dados = retornaValoresCSV(arquivo, 11)
-            infoArquivos.add(InfoArquivo(nome, modif, dir, dados))
+            infoArquivos.add(InfoArquivo(nome, modif, dir))
         }
 
         val recyclerList = findViewById<RecyclerView>(R.id.cardList)
@@ -62,32 +65,36 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
 
         arquivoAdapter = ArquivoAdapter(infoArquivos, this, this)
         recyclerList.setAdapter(arquivoAdapter)
-    }
 
-    private fun retornaValoresCSV(arquivo: File, qtd: Int): Array<Double> {
-        val scanner = Scanner(arquivo)
-        var linhaLida = ""
-        var arrayDados = emptyArray<Double>()
+        edtBuscaRegistros = findViewById(R.id.edtBuscaRegistros)
+        edtBuscaRegistros.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable){
+                infoArquivosUI = arrayListOf<InfoArquivo>()
+                
+                for (arquivo in infoArquivos){
+                   if (arquivo.nomeArquivo.startsWith(s.toString()))
+                       infoArquivosUI.add(arquivo)
+                }
+                arquivoAdapter.atualizaLista(infoArquivosUI)
+            }
 
-        scanner.nextLine()
-        for (i in 1..qtd){
-            if (!scanner.hasNextLine()) break
-
-            linhaLida = scanner.nextLine()
-            arrayDados += linhaLida.split(",")[1].toDouble()
-        }
-
-        return arrayDados
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int){ }
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int){ }
+        })
     }
 
     override public fun onCardClicked(pos: Int){
-    
+        val a = infoArquivosUI[pos]
+
+        val intent = Intent(applicationContext, MenuRegistrosAnteriores::class.java)
+        intent.putExtra("KEY_DIRETORIO_ARQUIVO", a.diretorioArquivo)
+        startActivity(intent)
     }
 
     override public fun onItemClicked(nome: String, pos: Int){
         when (nome){
             "Excluir" -> {
-                val a = infoArquivos[pos]
+                val a = infoArquivosUI[pos]
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Confirmar exclusão")
                 builder.setMessage("Deseja excluir \"" + a.nomeArquivo + "\"?")
@@ -97,8 +104,10 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
                         val arquivo = File(a.diretorioArquivo)
                         if (arquivo.exists()){
                             arquivo.delete()
-                            infoArquivos.removeAt(pos)
+                            infoArquivosUI.removeAt(pos)
+                            infoArquivos.remove(a)
                             arquivoAdapter.notifyItemRemoved(pos)
+
                         } else {
                             Toast.makeText(this@MenuRegistros, "Não foi possível " + 
                                 "excluir o arquivo: o arquivo não existe!",

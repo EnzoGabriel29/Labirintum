@@ -37,6 +37,12 @@
             android:label="Registros anteriores"
             android:windowSoftInputMode="stateHidden|adjustPan">
         </activity>
+
+        <activity
+            android:name=".MenuRegistrosAnteriores"
+            android:label="Registros anteriores">
+        </activity>
+
     </application>
 
 </manifest>
