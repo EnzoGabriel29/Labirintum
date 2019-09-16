@@ -22,7 +22,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:text=""
+                    android:text="@string/string_vazia"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView01"
@@ -32,7 +32,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:text="Acelerômetro"
+                    android:text="@string/sensor_acc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView02"
@@ -43,7 +43,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:text="Giroscópio"
+                    android:text="@string/sensor_gir"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView03"
@@ -60,7 +60,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:text="Tempo"
+                    android:text="@string/tag_tempo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView04"
@@ -70,7 +70,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:text="X"
+                    android:text="@string/raw_x"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView05"
@@ -80,7 +80,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:text="Y"
+                    android:text="@string/raw_y"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView06"
@@ -90,7 +90,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:text="Z"
+                    android:text="@string/raw_z"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView07"
@@ -100,7 +100,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:text="X"
+                    android:text="@string/raw_x"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView08"
@@ -110,7 +110,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:text="Y"
+                    android:text="@string/raw_y"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView09"
@@ -120,7 +120,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:text="Z"
+                    android:text="@string/raw_z"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView10"

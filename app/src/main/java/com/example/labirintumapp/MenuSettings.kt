@@ -1,27 +1,26 @@
 package com.example.labirintumapp
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.RadioGroup
-import android.widget.RadioButton
-import android.widget.Switch
-import android.widget.TextView
-import android.widget.CompoundButton
-import android.widget.Button
-import android.widget.Toast
-import android.widget.ArrayAdapter
-import android.widget.AdapterView
-import android.widget.Spinner
-import android.view.View
 import android.app.AlertDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.view.MotionEvent
-import android.content.Context
 import android.graphics.Rect
+import android.os.Bundle
+import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import android.widget.EditText
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.Spinner
+import android.widget.Switch
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
 class MenuSettings : AppCompatActivity() {
     

@@ -1,3 +1,42 @@
 <resources>
-    <string name="app_name">Labirintum</string>
+	<string name="app_name">Labirintum</string>
+    <string name="eixo_x">Eixo X</string>
+    <string name="eixo_y">Eixo Y</string>
+    <string name="eixo_z">Eixo Z</string>
+    <string name="raw_x">X</string>
+    <string name="raw_y">Y</string>
+    <string name="raw_z">Z</string>
+    <string name="sensor_acc">Acelerômetro</string>
+    <string name="sensor_gir">Giroscópio</string>
+    <string name="tag_tempo">Tempo</string>
+    <string name="tag_dados">Dados registrados</string>
+    <string name="btn_pausar">Pausar</string>
+    <string name="btn_parar">Parar</string>
+    <string name="btn_salvar">Salvar</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="btn_reg_ant">Registros anteriores</string>
+    <string name="btn_continuar">Continuar</string>
+    <string name="item_opcoes">Opções</string>
+    <string name="item_iniciar">Iniciar</string>
+    <string name="item_sobre">Sobre</string>
+    <string name="hint_pesquisar">Pesquisar</string>
+    <string name="hint_max_lin">Número máximo de linhas</string>
+    <string name="tab_graficos">Gráficos</string>
+    <string name="tab_texto">Texto</string>
+    <string name="title_int_grav">Intervalo de gravação</string>
+    <string name="title_form_arq">Formato de arquivo</string>
+    <string name="title_max_lin">Limitar número de linhas salvas</string>
+    <string name="title_graf_vis">Definir gráficos visíveis</string>
+    <string name="desc_int_grav">Define de quanto em quanto tempo os dados gerados pelo acelerômetro serão salvos no dispositivo pelo aplicativo.</string>
+    <string name="desc_form_arq">Define o formato do arquivo a ser salvo no dispositivo.</string>
+    <string name="desc_max_lin">Define se a gravação deve ser interrompida quando o arquivo alcançar um determinado número de linhas.</string>
+    <string name="desc_graf_vis">Define quais gráficos de sensores devem ficar visíveis durante o registro dos dados.</string>
+    <string name="item_form_arq_csv">Formato .csv</string>
+    <string name="item_form_arq_txt">Formato .txt</string>
+    <string name="item_max_lin_on">Ativar recurso</string>
+    <string name="item_max_lin_off">Desativar recurso</string>
+    <string name="item_graf_vis_acc">Mostrar gráfico do acelerômetro</string>
+    <string name="item_graf_vis_gir">Mostrar gráfico do giroscópio</string>
+
+    <string name="string_vazia"></string>
 </resources>

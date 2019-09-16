@@ -30,7 +30,7 @@
                     android:paddingBottom="5dp">
 
                     <TextView
-                        android:text="Eixo X"
+                        android:text="@string/eixo_x"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
@@ -42,7 +42,7 @@
                         android:paddingEnd="10dp"/>
 
                     <TextView
-                        android:text="Acelerômetro"
+                        android:text="@string/sensor_acc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="15sp"/>
@@ -73,7 +73,7 @@
                     android:paddingBottom="5dp">
 
                     <TextView
-                        android:text="Eixo Y"
+                        android:text="@string/eixo_y"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
@@ -85,7 +85,7 @@
                         android:paddingEnd="10dp"/>
 
                     <TextView
-                        android:text="Acelerômetro"
+                        android:text="@string/sensor_acc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="15sp"/>
@@ -118,7 +118,7 @@
                     android:paddingBottom="5dp">
 
                     <TextView
-                        android:text="Eixo Z"
+                        android:text="@string/eixo_z"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
@@ -130,7 +130,7 @@
                         android:paddingEnd="10dp"/>
 
                     <TextView
-                        android:text="Acelerômetro"
+                        android:text="@string/sensor_acc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="15sp"/>
@@ -161,7 +161,7 @@
                     android:paddingBottom="5dp">
 
                     <TextView
-                        android:text="Eixo X"
+                        android:text="@string/eixo_x"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
@@ -173,7 +173,7 @@
                         android:paddingEnd="10dp"/>
 
                     <TextView
-                        android:text="Giroscópio"
+                        android:text="@string/sensor_gir"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="15sp"/>
@@ -204,7 +204,7 @@
                     android:paddingBottom="5dp">
 
                     <TextView
-                        android:text="Eixo Y"
+                        android:text="@string/eixo_y"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
@@ -216,7 +216,7 @@
                         android:paddingEnd="10dp"/>
 
                     <TextView
-                        android:text="Giroscópio"
+                        android:text="@string/sensor_gir"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="15sp"/>
@@ -247,7 +247,7 @@
                     android:paddingBottom="5dp">
 
                     <TextView
-                        android:text="Eixo Z"
+                        android:text="@string/eixo_z"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textStyle="bold"
@@ -259,7 +259,7 @@
                         android:paddingEnd="10dp"/>
 
                     <TextView
-                        android:text="Giroscópio"
+                        android:text="@string/sensor_gir"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="15sp"/>

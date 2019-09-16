@@ -19,7 +19,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:text="Intervalo de gravação"
+                android:text="@string/title_int_grav"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
@@ -29,7 +29,7 @@
                 android:paddingBottom="5dp"/>
 
             <TextView
-                android:text="Define de quanto em quanto tempo os dados gerados pelo acelerômetro serão salvos no dispositivo pelo aplicativo."
+                android:text="@string/desc_int_grav"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
@@ -52,13 +52,13 @@
                 android:padding="20dp">
 
                 <TextView
-                    android:text="Formato de arquivo"
+                    android:text="@string/title_form_arq"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"/>
 
                 <TextView
-                    android:text="Define o formato do arquivo a ser salvo no dispositivo."
+                    android:text="@string/desc_form_arq"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
@@ -72,13 +72,13 @@
                     android:id="@+id/cgpFormatArq">
 
                     <RadioButton
-                        android:text="Formato .csv"
+                        android:text="@string/item_form_arq_csv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/chkCSV"/>
 
                     <RadioButton
-                        android:text="Formato .txt"
+                        android:text="@string/item_form_arq_txt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/chkTXT"/>
@@ -96,7 +96,7 @@
                 android:paddingBottom="10dp">
 
                 <TextView
-                    android:text="Limitar número de linhas salvas"
+                    android:text="@string/title_max_lin"
                     android:textSize="18sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
@@ -115,7 +115,7 @@
 
                     <TextView
                         android:id="@+id/txtSwitchStopRecording"
-                        android:text="Ativar recurso"
+                        android:text="@string/item_max_lin_on"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="5dp"
@@ -124,7 +124,7 @@
                 </LinearLayout>
 
                 <TextView
-                    android:text="Define se a gravação deve ser interrompida quando o arquivo alcançar um determinado número de linhas."
+                    android:text="@string/desc_max_lin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
@@ -138,7 +138,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
-                android:hint="Número máximo de linhas"
+                android:hint="@string/hint_max_lin"
                 android:paddingTop="10dp"
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
@@ -154,14 +154,14 @@
                 android:paddingBottom="10dp">
 
                 <TextView
-                    android:text="Definir gráficos visíveis"
+                    android:text="@string/title_graf_vis"
                     android:textSize="18sp"
                     android:paddingBottom="5dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
                 <TextView
-                    android:text="Define quais gráficos de sensores devem ficar visíveis durante o registro dos dados."
+                    android:text="@string/desc_graf_vis"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
@@ -172,13 +172,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/checkboxAcc"
-                    android:text="Mostrar gráfico do acelerômetro"/>
+                    android:text="@string/item_graf_vis_acc"/>
 
                 <CheckBox
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/checkboxGir"
-                    android:text="Mostrar gráfico do giroscópio"/>
+                    android:text="@string/item_graf_vis_gir"/>
 
             </LinearLayout>
 
@@ -196,7 +196,7 @@
             android:divider="?attr/dividerVertical">
 
         <TextView
-                android:text="Salvar"
+                android:text="@string/btn_salvar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/btnSalvar"
@@ -210,7 +210,7 @@
                 android:textSize="20sp"/>
 
         <TextView
-                android:text="Cancelar"
+                android:text="@string/btn_cancelar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/btnCancelar"

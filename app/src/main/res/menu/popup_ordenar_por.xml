@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <group
+    	android:checkableBehavior="single">
+
+	    <item
+	        android:id="@+id/action_ordenar_cresc"
+	        android:orderInCategory="1"
+	        android:title="Crescente"
+	        app:showAsAction="never"/>
+
+	    <item
+	        android:id="@+id/action_ordenar_decresc"
+	        android:orderInCategory="2"
+	        android:title="Decrescente"
+	        app:showAsAction="never"/>
+
+	</group>
+
+</menu>

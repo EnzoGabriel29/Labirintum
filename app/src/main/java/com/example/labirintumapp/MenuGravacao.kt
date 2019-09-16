@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -29,7 +28,6 @@ import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
 import java.io.FileWriter
-import java.util.*
 
 class SensorAndroid(){
     public var duracao = 0
@@ -376,15 +374,13 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             var tempoInicial = System.currentTimeMillis()
             while (true){
                 if (!isPausarThreads){
-
                     var tempoFinal = System.currentTimeMillis()
                     var duracao = tempoFinal - tempoInicial
                     
                     if (duracao > intervaloGravacao){
-                        Log.d(TAG, "ok")
                         flagPararGravacao = false
                         tempoInicial = tempoFinal
-                    } else flagPararGravacao = true
+                    }
                 }
 
                 if (isPararThreads) break
@@ -402,12 +398,13 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         sensorAtual.atualizaValoresGir(girEixoX, girEixoY, girEixoZ)
         flagPararGravacao = false
         isPararThreads = false
+        ThreadFiltro().start()
     }
 
     public fun pararGravacao(){
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        flagPararGravacao = true
         isPararThreads = true
+        flagPararGravacao = true
 
         if (this.linhasPreGravadas.size > 1){
             try {
@@ -432,8 +429,8 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     }
 
     public fun pausarGravacao(){
-        flagPararGravacao = true
         isPausarThreads = true
+        flagPararGravacao = true
     }
 
     public fun retomarGravacao(){
@@ -668,6 +665,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             atualizarTela()
             if (isGraficoAcc || isGraficoGir) atualizarGraficos()
             sensorAtual.aumentaDuracao(this.intervaloGravacao)
+            flagPararGravacao = true
         }
     }
 

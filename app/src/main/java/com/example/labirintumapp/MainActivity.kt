@@ -21,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.File
-import java.util.*
 
 fun isNumerico(str: String): Boolean {
     try {
@@ -53,10 +52,9 @@ class MainActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_principal)
 
-        if (!isPermissaoEscrita()){
+        if (!isPermissaoEscrita())
             verificarPermissaoEscrita()
-        }
-
+        
         btnIniciar = findViewById(R.id.btnIniciar)
         btnConfigs = findViewById(R.id.btnConfigs)
         btnRegistros = findViewById(R.id.btnRegistros)
@@ -116,6 +114,8 @@ class MainActivity : AppCompatActivity(){
 
         if (pref.getBoolean("KEY_PRIMEIRA_EXECUCAO", true)) {
             prefEditor.putBoolean("KEY_PRIMEIRA_EXECUCAO", false)
+            prefEditor.putBoolean("KEY_ORDENAR_REGISTROS_NOME", true)
+            prefEditor.putBoolean("KEY_ORDENAR_REGISTROS_CRESC", true)
             prefEditor.putInt("KEY_NUM_MAX_LINHAS", 120)
             prefEditor.putInt("KEY_DELAY_GRAVACAO", 200)
             prefEditor.putString("KEY_EXTENSAO_ARQUIVO", "csv")

@@ -8,6 +8,13 @@
     android:id="@+id/main_layout"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="50dp"
+        android:src="@drawable/app_icon"/>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -40,7 +47,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Opções"
+                        android:text="@string/item_opcoes"
                         android:textColor="@android:color/black"
                         android:textAllCaps="true"
                         android:textSize="18sp"
@@ -73,7 +80,7 @@
                         android:textStyle="bold"
                         android:textSize="18sp"
                         android:textColor="@android:color/black"
-                        android:text="Iniciar"
+                        android:text="@string/item_iniciar"
                         android:layout_gravity="center"/>
                         
                 </LinearLayout>
@@ -98,7 +105,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sobre"
+                        android:text="@string/item_sobre"
                         android:textAllCaps="true"
                         android:textColor="@android:color/black"
                         android:textSize="18sp"
@@ -112,7 +119,7 @@
 
     <Button
         android:id="@+id/btnRegistros"
-        android:text="Registros anteriores"
+        android:text="@string/btn_reg_ant"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:textSize="18sp"

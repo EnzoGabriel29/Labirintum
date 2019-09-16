@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="15dp"
         android:id="@+id/edtBuscaRegistros"
-        android:hint="Pesquisar"
+        android:hint="@string/hint_pesquisar"
         android:drawableLeft="@drawable/icon_search"
         android:layout_margin="5dp"/>
 

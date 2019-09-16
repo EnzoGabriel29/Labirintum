@@ -1,18 +1,14 @@
 package com.example.labirintumapp
 
-import android.util.Log
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
-import android.content.Context
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.util.UUID
-import android.os.SystemClock
-import android.widget.Toast
 
 class BluetoothConnector(private val activity: MenuGravacao) {
     private var mState: Int = 0
@@ -45,12 +41,10 @@ class BluetoothConnector(private val activity: MenuGravacao) {
     }
 
     public fun iniciaTerapeuta(){
-        Log.d(TAG, "iniciaTerapeuta called.")
         start()
     }
 
     public fun iniciaPaciente(device: BluetoothDevice, secure: Boolean){
-        Log.d(TAG, "iniciaPaciente called.")
         connect(device, secure)
     }
 
@@ -157,8 +151,6 @@ class BluetoothConnector(private val activity: MenuGravacao) {
         private val mSocketType: String
         
         init {
-            Log.d(TAG, "listenUsingRfcommWithServiceRecord called.")
-
             var tmp: BluetoothServerSocket? = null
             mSocketType = if (secure) "Secure" else "Insecure"
 
@@ -169,7 +161,7 @@ class BluetoothConnector(private val activity: MenuGravacao) {
                 tmp = mAdapter.listenUsingInsecureRfcommWithServiceRecord(NAME_INSECURE, MY_UUID_INSECURE)
             
             } catch (e: IOException) {
-                Log.e(TAG, "Socket Type: $mSocketType listen() failed", e)
+                
             }
 
             mmServerSocket = tmp
@@ -177,8 +169,6 @@ class BluetoothConnector(private val activity: MenuGravacao) {
         }
 
         public override fun run() {
-            Log.d(TAG, "accept called.")
-            
             var socket: BluetoothSocket? = null
 
             while (mState !== STATE_CONNECTED){
@@ -186,7 +176,6 @@ class BluetoothConnector(private val activity: MenuGravacao) {
                     socket = mmServerSocket!!.accept()
 
                 } catch (e: IOException){
-                    Log.e(TAG, "Socket Type: $mSocketType accept() failed", e)
                     break
                 }
 
@@ -201,10 +190,10 @@ class BluetoothConnector(private val activity: MenuGravacao) {
                                     socket!!.close()
                                 
                                 } catch (e: IOException){
-                                    Log.e(TAG, "Could not close unwanted socket", e)
+                                
                                 }
 
-                            else -> Log.d(TAG, "")
+                            else -> { }
                         }
                     }
                 }
@@ -216,7 +205,7 @@ class BluetoothConnector(private val activity: MenuGravacao) {
               mmServerSocket!!.close()
             
             } catch (e: IOException){
-                Log.e(TAG, "Socket Type $mSocketType close() of server failed", e)
+                
             }
         }
     }
@@ -227,7 +216,6 @@ class BluetoothConnector(private val activity: MenuGravacao) {
         private val mmOutStream: OutputStream?
 
         init {
-            Log.d(TAG, "create ConnectedThread: $socketType")
             mmSocket = socket
         
             var tmpIn: InputStream? = null
@@ -237,7 +225,7 @@ class BluetoothConnector(private val activity: MenuGravacao) {
                 tmpIn = socket.getInputStream()
                 tmpOut = socket.getOutputStream()
             } catch (e: IOException) {
-                Log.e(TAG, "temp sockets not created", e)
+
             }
 
             mmInStream = tmpIn
@@ -264,7 +252,6 @@ class BluetoothConnector(private val activity: MenuGravacao) {
 
            
                 } catch (e: IOException) {
-                    Log.e(TAG, "disconnected", e)
                     break
                 }
             }
@@ -275,7 +262,7 @@ class BluetoothConnector(private val activity: MenuGravacao) {
                 mmOutStream!!.write(buffer)
 
             } catch (e: IOException) {
-                Log.e(TAG, "Exception during write", e)
+
             }
         }
 
@@ -283,7 +270,7 @@ class BluetoothConnector(private val activity: MenuGravacao) {
             try {
                 mmSocket.close()
             } catch (e:IOException) {
-                Log.e(TAG, "close() of connect socket failed", e)
+
             }
         }
     }
@@ -294,7 +281,6 @@ class BluetoothConnector(private val activity: MenuGravacao) {
         private val mSocketType: String
 
         init {
-            Log.d(TAG, "createRfcommSocketToServiceRecord called.")
             mmDevice = device
             var tmp: BluetoothSocket? = null
             mSocketType = if (secure) "Secure" else "Insecure"
@@ -304,7 +290,7 @@ class BluetoothConnector(private val activity: MenuGravacao) {
                 else tmp = device.createInsecureRfcommSocketToServiceRecord(MY_UUID_INSECURE)
             
             } catch (e: IOException) {
-                Log.e(TAG, "Socket Type: $mSocketType create() failed", e)
+                
             }
             
             mmSocket = tmp
@@ -312,7 +298,6 @@ class BluetoothConnector(private val activity: MenuGravacao) {
         }
       
         public override fun run() {
-             Log.d(TAG, "connect called.")
             mAdapter.cancelDiscovery()
         
             try {
@@ -323,9 +308,8 @@ class BluetoothConnector(private val activity: MenuGravacao) {
                     mmSocket!!.close()
                 
                 } catch (e2: IOException){
-                    Log.e(TAG, ("unable to close() $mSocketType socket during connection failure"), e2)
+                    
                 }
-                // connectionFailed()
                 return
             }
 
@@ -341,7 +325,7 @@ class BluetoothConnector(private val activity: MenuGravacao) {
                 mmSocket!!.close()
             
             } catch (e: IOException) {
-                Log.e(TAG, "close() of connect " + mSocketType + " socket failed", e)
+                
             }
         }
     }

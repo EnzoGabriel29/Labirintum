@@ -17,10 +17,10 @@
         app:tabGravity="fill">
 
       <com.google.android.material.tabs.TabItem
-          android:text="Gráfico"/>
+          android:text="@string/tab_graficos"/>
 
       <com.google.android.material.tabs.TabItem
-          android:text="Texto"/>
+          android:text="@string/tab_texto"/>
 
     </com.google.android.material.tabs.TabLayout>
 

@@ -1,19 +1,14 @@
 package com.example.labirintumapp
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageButton
-import android.widget.Toast
-import java.text.SimpleDateFormat
-import android.util.Log
-import android.widget.PopupMenu
-import android.view.MenuItem
-import java.io.File
-import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.RecyclerView
 
 class InfoArquivo (nome: String, modif: String, dir: String){
     val nomeArquivo = nome
