@@ -98,4 +98,6 @@ Concedida a permissão, o dispositivo do terapeuta pode selecionar o nome do dis
 dos dados irá automaticamente ser iniciado.
 
 Na opção do paciente, não é possível pausar ou parar o registro dos dados, apenas na opção do terapeuta. Quando
-o terapeuta encerrar a gravação, ambos os aplicativos voltam para o seu menu inicial. 
+o terapeuta encerrar a gravação, ambos os aplicativos voltam para o seu menu inicial.
+
+Created my free logo at [LogoMakr.com](logoMakr.com).
