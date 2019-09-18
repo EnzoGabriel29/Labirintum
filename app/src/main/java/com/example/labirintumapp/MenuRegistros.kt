@@ -61,7 +61,6 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
         recyclerList.setLayoutManager(llm)
 
         val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
-        val prefEditor = pref.edit()
         ordenarNome = pref.getBoolean("KEY_ORDENAR_REGISTROS_NOME", true)
         ordenarCresc = pref.getBoolean("KEY_ORDENAR_REGISTROS_CRESC", true)
 
@@ -130,8 +129,8 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
                 if (ordenarNome) popup.menu.getItem(0).setChecked(true)
                 else popup.menu.getItem(1).setChecked(true)
 
-                popup.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {  
-                    override public fun onMenuItemClick(item2: MenuItem): Boolean {
+                popup.setOnMenuItemClickListener {
+                    item2: MenuItem ->
                         when (item2.itemId){
                             R.id.action_ordenar_nome -> {
                                 popup.menu.getItem(0).setChecked(true)
@@ -146,9 +145,8 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
                             }
                         }
 
-                        return true
-                    }  
-                })
+                    true
+                }
 
                 popup.show()
 
@@ -163,8 +161,8 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
                 if (ordenarCresc) popup.menu.getItem(0).setChecked(true)
                 else popup.menu.getItem(1).setChecked(true)
 
-                popup.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {  
-                    override public fun onMenuItemClick(item2: MenuItem): Boolean {
+                popup.setOnMenuItemClickListener {
+                    item2: MenuItem ->
                         when (item2.itemId){
                             R.id.action_ordenar_cresc -> {
                                 popup.menu.getItem(0).setChecked(true)
@@ -179,9 +177,8 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
                             }
                         }
 
-                        return true
-                    }  
-                })
+                    true
+                }
 
                 popup.show()
 
@@ -204,12 +201,12 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
         when (nome){
             "Excluir" -> {
                 val a = infoArquivosUI[pos]
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("Confirmar exclusão")
-                builder.setMessage("Deseja excluir \"" + a.nomeArquivo + "\"?")
+                val builderExclusao = AlertDialog.Builder(this)
+                builderExclusao.setTitle("Confirmar exclusão")
+                builderExclusao.setMessage("Deseja excluir \"" + a.nomeArquivo + "\"?")
 
-                builder.setPositiveButton("OK", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int) {
+                builderExclusao.setPositiveButton("OK"){
+                    dialog: DialogInterface, _: Int ->
                         val arquivo = File(a.diretorioArquivo)
                         if (arquivo.exists()){
                             arquivo.delete()
@@ -222,16 +219,16 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
                                 "excluir o arquivo: o arquivo não existe!",
                                 Toast.LENGTH_SHORT).show()
                         }
-                    }
-                })
 
-                builder.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int) {
                         dialog.dismiss()
-                    }
-                })
+                }
+
+                builderExclusao.setNegativeButton("Cancelar"){
+                    dialog: DialogInterface, _: Int ->
+                        dialog.dismiss()   
+                }
                 
-                builder.create().show()
+                builderExclusao.create().show()
             }
 
             else -> { }

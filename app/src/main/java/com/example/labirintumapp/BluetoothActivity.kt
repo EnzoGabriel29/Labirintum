@@ -10,7 +10,7 @@ import java.io.OutputStream
 import java.nio.charset.Charset
 import java.util.UUID
 
-class BluetoothConnector(private val activity: MenuGravacao) {
+class BluetoothConnector(private val activity: MenuGravacao){
     private var mState: Int = 0
     private var mNewState: Int = 0
     private val mAdapter: BluetoothAdapter

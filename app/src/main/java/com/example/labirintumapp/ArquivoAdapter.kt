@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.recyclerview.widget.RecyclerView
 
-class InfoArquivo (nome: String, modif: String, dir: String){
+class InfoArquivo(nome: String, modif: String, dir: String){
     val nomeArquivo = nome
     val dataModificado = modif
     val diretorioArquivo = dir
@@ -36,12 +36,11 @@ public class ArquivoAdapter(arquivos: MutableList<InfoArquivo>,
                 val popup = PopupMenu(activity, btnMostraOpcoes)  
                 popup.menuInflater.inflate(R.menu.popup_registros, popup.menu)  
 
-                popup.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {  
-                    override public fun onMenuItemClick(item: MenuItem): Boolean {
+                popup.setOnMenuItemClickListener {
+                    item: MenuItem ->
                         listener.onItemClicked(item.title.toString(), adapterPosition)
-                        return true
-                    }  
-                })
+                        true
+                }
 
                 popup.show()
             }
@@ -61,7 +60,7 @@ public class ArquivoAdapter(arquivos: MutableList<InfoArquivo>,
     override fun onBindViewHolder(avh: ArquivoViewHolder, i: Int){
         val a = this.listaArquivos[i]
         val nomeArquivo = a.nomeArquivo
-        val dataModificado = String.format("Modificado em %s", a.dataModificado)
+        val dataModificado = "Modificado em %s".format(a.dataModificado)
 
         avh.txtNomeArquivo.setText(nomeArquivo)
         avh.txtDataModificado.setText(dataModificado)

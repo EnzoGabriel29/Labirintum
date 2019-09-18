@@ -22,15 +22,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.File
 
-fun isNumerico(str: String): Boolean {
-    try {
-        str.toInt()
-        return true
-    } catch (e: NumberFormatException) {
-        return false
-    }
-}
-
 const val TAG = "LABIRINTUMAPP"
 
 class MainActivity : AppCompatActivity(){
@@ -39,13 +30,8 @@ class MainActivity : AppCompatActivity(){
     private lateinit var btnConfigs: LinearLayout
     private lateinit var mainLayout: RelativeLayout 
 
-    private var numLinhasMaximo = 0
-    private var intervaloGravacao = 0
-    private var graficosVisiveis = 0
-    private var extensaoArquivo = ""
-
     companion object {
-        private val MY_PERMISSIONS_REQUEST_WRITE = 1;
+        private val MY_PERMISSIONS_REQUEST_WRITE = 1
     }
     
     override fun onCreate(savedInstanceState: Bundle?){
@@ -60,54 +46,43 @@ class MainActivity : AppCompatActivity(){
         btnRegistros = findViewById(R.id.btnRegistros)
         mainLayout = findViewById(R.id.main_layout)
 
-        btnIniciar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View) {
-                val bDefineNomeArquivo = AlertDialog.Builder(this@MainActivity)
-                bDefineNomeArquivo.setTitle("Qual é o nome do arquivo?")
+        btnIniciar.setOnClickListener {
+            val builderNomeArq = AlertDialog.Builder(this)
+            builderNomeArq.setTitle("Qual é o nome do arquivo?")
 
-                val input = EditText(this@MainActivity)
-                val lp2 = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT)
-                input.layoutParams = lp2
-                input.hint = "Insira o nome do arquivo"
-                bDefineNomeArquivo.setView(input, 20, 0, 20, 0)
+            val input = EditText(this)
+            val lp2 = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT)
 
-                bDefineNomeArquivo.setPositiveButton("Iniciar", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, id: Int) {
-                        var nomeArquivo = input.text.toString()
-                        val diretorioGravacao = this@MainActivity.geraDiretorioGravacao(nomeArquivo)
-                        this@MainActivity.iniciarGravacao(diretorioGravacao, MenuGravacao.MODO_PADRAO)
-                    }
-                })
-                bDefineNomeArquivo.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int) {
-                        dialog.cancel()
-                    }
-                })
-                bDefineNomeArquivo.show()
+            input.layoutParams = lp2
+            input.hint = "Insira o nome do arquivo"
+            builderNomeArq.setView(input, 20, 0, 20, 0)
+
+            builderNomeArq.setPositiveButton("Iniciar"){
+                dialog: DialogInterface, _: Int ->
+                    dialog.dismiss()
+                    var nomeArquivo = input.text.toString()
+                    val diretorioGravacao = geraDiretorioGravacao(nomeArquivo)
+                    iniciarGravacao(diretorioGravacao, MenuGravacao.MODO_PADRAO)
             }
-        })
 
-        btnConfigs.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View) {
-                defineLayoutConfiguracoes()
+            builderNomeArq.setNegativeButton("Cancelar"){
+                dialog: DialogInterface, _: Int ->
+                    dialog.dismiss()
             }
-        })
 
-        btnRegistros.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View) {
-                val intent = Intent(applicationContext, MenuRegistros::class.java)
-                startActivity(intent)
-            }
-        })
+            builderNomeArq.show()
+        }
 
-        atualizaPadroes()
-    }
+        btnConfigs.setOnClickListener {
+            defineLayoutConfiguracoes()
+        }
 
-    private fun atualizaPadroes(){
-        val intentRecebido = intent
-        if (intentRecebido == null) return
+        btnRegistros.setOnClickListener {
+            val intentRegs = Intent(applicationContext, MenuRegistros::class.java)
+            startActivity(intentRegs)
+        }
 
         val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
         val prefEditor = pref.edit()
@@ -117,34 +92,22 @@ class MainActivity : AppCompatActivity(){
             prefEditor.putBoolean("KEY_ORDENAR_REGISTROS_NOME", true)
             prefEditor.putBoolean("KEY_ORDENAR_REGISTROS_CRESC", true)
             prefEditor.putInt("KEY_NUM_MAX_LINHAS", 120)
+            prefEditor.putBoolean("KEY_IS_NUM_MAX_LINHAS", true)
             prefEditor.putInt("KEY_DELAY_GRAVACAO", 200)
             prefEditor.putString("KEY_EXTENSAO_ARQUIVO", "csv")
             prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", 3)
             prefEditor.commit()
-            return
         }
-
-        if (intentRecebido.getStringExtra("KEY_NOME_ACTIVITY") == "MenuSettings"
-        && intentRecebido.getStringExtra("KEY_ACAO_USUARIO") == "salvar"){
-            prefEditor.putInt("KEY_NUM_MAX_LINHAS", intentRecebido.getStringExtra("KEY_NUM_MAX_LINHAS").toInt())
-            prefEditor.putInt("KEY_DELAY_GRAVACAO", intentRecebido.getStringExtra("KEY_DELAY_GRAVACAO").toInt())
-            prefEditor.putString("KEY_EXTENSAO_ARQUIVO", intentRecebido.getStringExtra("KEY_EXTENSAO_ARQUIVO"))
-            prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", intentRecebido.getStringExtra("KEY_GRAFICOS_VISIVEIS").toInt())
-            prefEditor.commit()
-        }
-
-        numLinhasMaximo = pref.getInt("KEY_NUM_MAX_LINHAS", 120)
-        intervaloGravacao = pref.getInt("KEY_DELAY_GRAVACAO", 200)
-        graficosVisiveis = pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)
-        extensaoArquivo = pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ?: "csv"
     }
 
     override fun onResume(){
         super.onResume()
-        this.atualizaPadroes()
     }
 
     private fun geraDiretorioGravacao(nomeArq: String): String {
+        val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
+        val extensaoArquivo = pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ?: "csv"
+
         var nomeArquivo = nomeArq
         val diretorioPai = "${Environment.getExternalStorageDirectory().path}/LabirintumDados"
         var intCont = 0
@@ -185,15 +148,10 @@ class MainActivity : AppCompatActivity(){
 
     private fun iniciarGravacao(diretorioArquivo: String, modoGravacao: Int){
         if (isPermissaoEscrita()){
-            val intent = Intent(applicationContext, MenuGravacao::class.java)
-            intent.putExtra("KEY_NOME_ACTIVITY", "MainActivity")
-            intent.putExtra("KEY_DIRETORIO_ARQUIVO", diretorioArquivo)
-            intent.putExtra("KEY_MODO_GRAVACAO", modoGravacao)
-            intent.putExtra("KEY_EXTENSAO_ARQUIVO", this.extensaoArquivo)
-            intent.putExtra("KEY_NUM_MAX_LINHAS", this.numLinhasMaximo)
-            intent.putExtra("KEY_DELAY_GRAVACAO", this.intervaloGravacao)
-            intent.putExtra("KEY_GRAFICOS_VISIVEIS", this.graficosVisiveis)
-            startActivity(intent)
+            val intentGravacao = Intent(applicationContext, MenuGravacao::class.java)
+            intentGravacao.putExtra("KEY_DIRETORIO_ARQUIVO", diretorioArquivo)
+            intentGravacao.putExtra("KEY_MODO_GRAVACAO", modoGravacao)
+            startActivity(intentGravacao)
             finish()
 
         } else {
@@ -210,13 +168,8 @@ class MainActivity : AppCompatActivity(){
     }
 
     private fun defineLayoutConfiguracoes(){
-        val intent = Intent(applicationContext, MenuSettings::class.java)
-        intent.putExtra("KEY_NOME_ACTIVITY", "MainActivity")
-        intent.putExtra("KEY_EXTENSAO_ARQUIVO", this.extensaoArquivo.toString())
-        intent.putExtra("KEY_NUM_MAX_LINHAS", this.numLinhasMaximo.toString())
-        intent.putExtra("KEY_DELAY_GRAVACAO", this.intervaloGravacao.toString())
-        intent.putExtra("KEY_GRAFICOS_VISIVEIS", this.graficosVisiveis.toString())
-        startActivity(intent)
+        val intentConfigs = Intent(applicationContext, MenuSettings::class.java)
+        startActivity(intentConfigs)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {

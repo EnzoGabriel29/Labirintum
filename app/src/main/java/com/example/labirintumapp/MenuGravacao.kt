@@ -1,6 +1,7 @@
 package com.example.labirintumapp
 
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.hardware.Sensor
@@ -98,6 +99,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private var isGraficoGir = false
     private var isPausarThreads = false
     private var isPararThreads = false
+    private var maxEixoY = 20.0
 
     private var linhasPreGravadas = arrayOf<String>("HORARIO,ACC EIXO X,ACC EIXO Y,ACC EIXO Z,GIR EIXO X,GIR EIXO Y,GIR EIXO Z")
 
@@ -123,13 +125,15 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         setContentView(R.layout.menu_gravacao)
 
         val intentRecebido = intent
-        this.modoGravacao = intentRecebido.getIntExtra("KEY_MODO_GRAVACAO", MODO_PADRAO)
-        this.diretorioArquivo = intentRecebido.getStringExtra("KEY_DIRETORIO_ARQUIVO") ?: ""
-        this.extensaoArquivo = intentRecebido.getStringExtra("KEY_EXTENSAO_ARQUIVO") ?: ""
-        this.numLinhasMaximo = intentRecebido.getIntExtra("KEY_NUM_MAX_LINHAS", 120)
-        this.intervaloGravacao = intentRecebido.getIntExtra("KEY_DELAY_GRAVACAO", 200)
-        this.graficosVisiveis = intentRecebido.getIntExtra("KEY_GRAFICOS_VISIVEIS", 3)
-        this.isLimiteLinhas = numLinhasMaximo > 0
+        val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
+
+        modoGravacao = intentRecebido.getIntExtra("KEY_MODO_GRAVACAO", MODO_PADRAO)
+        diretorioArquivo = intentRecebido.getStringExtra("KEY_DIRETORIO_ARQUIVO") ?: ""
+        extensaoArquivo = pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ?: "csv"
+        numLinhasMaximo = pref.getInt("KEY_NUM_MAX_LINHAS", 120)
+        intervaloGravacao = pref.getInt("KEY_DELAY_GRAVACAO", 200)
+        graficosVisiveis = pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)
+        isLimiteLinhas = pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true)
 
         tabelaDados = findViewById(R.id.tabelaDados)
         recLayout   = findViewById(R.id.rec_layout)
@@ -147,7 +151,6 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             graficosEixos += findViewById<GraphView>(R.id.graphAccEixoZ)
         
         } else graphLayout.removeViews(0, 3)
-        
 
         if (isGraficoGir){
             graficosEixos += findViewById<GraphView>(R.id.graphGirEixoX)
@@ -162,36 +165,35 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
             graficosEixos[i].addSeries(seriesEixos[i])
 
-            graficosEixos[i].getViewport().setXAxisBoundsManual(true)
-            graficosEixos[i].getViewport().setMinX(0.0)
-            if (!isLimiteLinhas) graficosEixos[i].getViewport().setMaxX(40.0)
-            else graficosEixos[i].getViewport().setMaxX(numLinhasMaximo.toDouble())
+            graficosEixos[i].viewport.setXAxisBoundsManual(true)
+            graficosEixos[i].viewport.setMinX(0.0)
+            if (!isLimiteLinhas) graficosEixos[i].viewport.setMaxX(40.0)
+            else graficosEixos[i].viewport.setMaxX(numLinhasMaximo.toDouble())
 
-            graficosEixos[i].getViewport().setYAxisBoundsManual(true)
-            graficosEixos[i].getViewport().setMinY(0.0)
-            graficosEixos[i].getViewport().setMaxY(20.0)
+            graficosEixos[i].viewport.setYAxisBoundsManual(true)
+            graficosEixos[i].viewport.setMinY(0.0)
+            graficosEixos[i].viewport.setMaxY(maxEixoY)
         }
 
         var modoBtnPausar = BOTAO_PAUSAR
-        btnPausar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View){
-                if (modoBtnPausar == BOTAO_PAUSAR){
-                    this@MenuGravacao.pausarGravacao()
-                    modoBtnPausar = BOTAO_CONTINUAR
-                    btnPausar.text = "Continuar"
-                } else {
-                    this@MenuGravacao.retomarGravacao()
-                    modoBtnPausar = BOTAO_PAUSAR
-                    btnPausar.text = "Pausar"
-                }
+        btnPausar.setOnClickListener {
+            if (modoBtnPausar == BOTAO_PAUSAR){
+                pausarGravacao()
+                modoBtnPausar = BOTAO_CONTINUAR
+                btnPausar.text = "Continuar"
+
+            } else {
+                retomarGravacao()
+                modoBtnPausar = BOTAO_PAUSAR
+                btnPausar.text = "Pausar"
             }
-        })
+        }
 
         appSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         appSensorManager.registerListener(this, appSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), this.intervaloGravacao*1000)
         appSensorManager.registerListener(this, appSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), this.intervaloGravacao*1000)
 
-        if (this.modoGravacao == MODO_PADRAO)
+        if (modoGravacao == MODO_PADRAO)
             criaLayoutPadrao()
 
         else {
@@ -210,8 +212,9 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             val modosUsuario = arrayOf("Dispositivo do terapeuta", "Dispositivo do paciente")
             bEscolheUsuario.setTitle("Qual dispositivo você está usando?")
             bEscolheUsuario.setCancelable(false)
-            bEscolheUsuario.setItems(modosUsuario, object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, which: Int){
+
+            bEscolheUsuario.setItems(modosUsuario){
+                dialog: DialogInterface, which: Int ->
                     tipoUsuario = if (which == 0) USER_TERAPEUTA else USER_PACIENTE
 
                     if (tipoUsuario == USER_TERAPEUTA){
@@ -222,15 +225,15 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
                     } else mostraDispositivosPareados()
 
-                    dialog.cancel()
-                }
-            })
-            bEscolheUsuario.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, which: Int){
+                    dialog.dismiss()
+            }
+
+            bEscolheUsuario.setNegativeButton("Cancelar"){
+                dialog: DialogInterface, _: Int ->
                     dialog.cancel()
                     pararGravacao()
-                }
-            })
+            }
+
             bEscolheUsuario.show()
         }
 
@@ -257,15 +260,15 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                 builder = AlertDialog.Builder(this@MenuGravacao)
                 builder!!.setTitle("Aguardando conexão com outro dispositivo...")
                 builder!!.setCancelable(false)
-                builder!!.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int){
-                        bluetoothConnector.cancelaDescoberta()
+
+                builder!!.setNegativeButton("Cancelar"){
+                    dialog: DialogInterface, _: Int ->
                         dialog.cancel()
+                        bluetoothConnector.cancelaDescoberta()
                         pararGravacao()
                         this@TaskProgresso.cancel(true)
                         Toast.makeText(this@MenuGravacao, "Descoberta cancelada!", Toast.LENGTH_SHORT).show()
-                    }
-                })
+                }
                 
                 val progressBar = ProgressBar(this@MenuGravacao)
                 val layoutParams = LinearLayout.LayoutParams(
@@ -302,39 +305,38 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
         bEscolhePareados.setTitle("Dispositivos pareados")
         bEscolhePareados.setCancelable(false)
-        bEscolhePareados.setItems(nomesDispositivos, object : DialogInterface.OnClickListener {
-            override fun onClick(dialog: DialogInterface, which: Int){
+
+        bEscolhePareados.setItems(nomesDispositivos){
+            dialog: DialogInterface, which: Int ->
                 bluetoothConnector.iniciaPaciente(dispositivos[which], true)
 
                 TaskProgresso().execute()
                 criaLayoutPaciente()
 
                 dialog.dismiss()
-            }
-        })
-        bEscolhePareados.setNegativeButton("Cancelar", object : DialogInterface.OnClickListener {
-            override fun onClick(dialog: DialogInterface, which: Int){
+        }
+
+        bEscolhePareados.setNegativeButton("Cancelar"){
+            dialog: DialogInterface, _: Int ->
                 dialog.cancel()
                 pararGravacao()
-            }
-        })
+        }
+
         bEscolhePareados.show()
     }
 
     private fun criaLayoutPadrao(){
         iniciarGravacao()
-        btnParar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View){
-                this@MenuGravacao.pararGravacao()
-            }
-        })
+        btnParar.setOnClickListener {
+            pararGravacao()
+        }
     }
 
     private fun criaLayoutPaciente(){
         recLayout.removeAllViews()
 
         val textoEspera = TextView(this)
-        textoEspera.setText("Os dados estão sendo\nenviados ao seu terapeuta.");
+        textoEspera.setText("Os dados estão sendo\nenviados ao seu terapeuta.")
         val rllp = RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.MATCH_PARENT)
@@ -346,27 +348,23 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
     private fun criaLayoutTerapeuta(){
         var btnPausarTerapeuta = BOTAO_PAUSAR
-        btnPausar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View){
-                if (btnPausarTerapeuta == BOTAO_PAUSAR){
-                    btnPausar.text = "Continuar"
-                    btnPausarTerapeuta = BOTAO_CONTINUAR
-                    bluetoothConnector.enviaMensagem("2")
+        btnPausar.setOnClickListener {
+            if (btnPausarTerapeuta == BOTAO_PAUSAR){
+                btnPausar.text = "Continuar"
+                btnPausarTerapeuta = BOTAO_CONTINUAR
+                bluetoothConnector.enviaMensagem("2")
 
-                } else {
-                    btnPausar.text = "Pausar"
-                    btnPausarTerapeuta = BOTAO_PAUSAR
-                    bluetoothConnector.enviaMensagem("3")
-                }
+            } else {
+                btnPausar.text = "Pausar"
+                btnPausarTerapeuta = BOTAO_PAUSAR
+                bluetoothConnector.enviaMensagem("3")
             }
-        })
+        }
 
-        btnParar.setOnClickListener(object : View.OnClickListener {
-            override public fun onClick(v: View){
-                this@MenuGravacao.bluetoothConnector.enviaMensagem("0")
-                this@MenuGravacao.pararGravacao()
-            }
-        })
+        btnParar.setOnClickListener {
+            bluetoothConnector.enviaMensagem("0")
+            pararGravacao()
+        }
     }
 
     private inner class ThreadFiltro : Thread() {
@@ -546,6 +544,20 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
         val pontosEixoX = if (isLimiteLinhas) numLinhasMaximo else 40
         val isGraficoFixo = isLimiteLinhas
+
+        val valoresEixos = arrayOf(sensorAtual.accValorX,
+            sensorAtual.accValorY, sensorAtual.accValorZ,
+            sensorAtual.girValorX, sensorAtual.girValorY,
+            sensorAtual.girValorZ)
+
+        if (valoresEixos.filter{it > maxEixoY}.any()){
+            val novoMax = valoresEixos.max() ?: 0.0
+
+            for (grafico in graficosEixos)
+                grafico.viewport.setMaxY(novoMax + 10.0)
+
+            maxEixoY = novoMax
+        }
 
         if (isGraficoAcc && isGraficoGir){
             seriesEixos[0].appendData(DataPoint(pontoX, sensorAtual.accValorX), !isGraficoFixo, pontosEixoX)

@@ -5,7 +5,11 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -22,32 +26,117 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
-class MenuSettings : AppCompatActivity() {
-    
+class MenuSettings : AppCompatActivity(){
+    private lateinit var spnIntGrav: Spinner
+    private lateinit var rgpExtArq: RadioGroup
+    private lateinit var edtMaxLin: EditText
+    private lateinit var swtMaxLin: Switch
+    private lateinit var txtMaxLin: TextView
+    private lateinit var chkGrafAcc: CheckBox
+    private lateinit var chkGrafGir: CheckBox
+    private lateinit var btnSalvar: TextView
+    private lateinit var btnCancelar: TextView
+
+    private var intervaloGravacao: Int
+        get() = when (spnIntGrav.getSelectedItem().toString()){
+            "Delay normal (200 milissegundos)" -> 200
+            "Delay acima do normal (100 milissegundos)" -> 100
+            "Delay rápido (60 milissegundos)" -> 60
+            "Delay ultrarrápido (20 milissegundos)" -> 20
+            else -> 0
+        }
+
+        set(valor){
+            when (valor){
+                200 -> spnIntGrav.setSelection(0)
+                100 -> spnIntGrav.setSelection(1)
+                60 -> spnIntGrav.setSelection(2)
+                20 -> spnIntGrav.setSelection(3)
+                else -> throw IllegalArgumentException()
+            }  
+        }
+
+    private var extensaoArquivo: String
+        get() = when(findViewById<RadioButton>(
+        rgpExtArq.getCheckedRadioButtonId()).text.toString()){
+            "Formato .csv" -> "csv"
+            "Formato .txt" -> "txt"
+            else -> ""
+        }
+
+        set(valor){
+            when (valor){
+                "csv" -> rgpExtArq.check(R.id.chkCSV)
+                "txt" -> rgpExtArq.check(R.id.chkTXT)
+                else -> throw IllegalArgumentException()
+            }
+        }
+
+    private var isNumMaxLinhas: Boolean
+        get() = swtMaxLin.isChecked
+
+        set(valor){            
+            if (valor){
+                txtMaxLin.text = "Recurso ativado"
+                edtMaxLin.isEnabled = true
+
+            } else {
+                txtMaxLin.text = "Recurso desativado"
+                edtMaxLin.isEnabled = false
+            }
+
+            swtMaxLin.isChecked = valor
+        }
+
+    private var numMaxLinhas: Int
+        get() = edtMaxLin.text.toString().toInt()
+
+        set(valor){
+            edtMaxLin.setText(valor.toString())
+        }
+
+    private var graficosVisiveis: Int
+        get() = (if (chkGrafAcc.isChecked) 1 else 0) + (if (chkGrafGir.isChecked) 2 else 0)
+
+        set(valor){
+            when (valor){
+                0 -> {
+                    chkGrafAcc.setChecked(false)
+                    chkGrafGir.setChecked(false)
+                }
+
+                1 -> {
+                    chkGrafAcc.setChecked(true)
+                    chkGrafGir.setChecked(false)
+                }
+
+                2 -> {
+                    chkGrafAcc.setChecked(false)
+                    chkGrafGir.setChecked(true)
+                }
+
+                3 -> {
+                    chkGrafAcc.setChecked(true)
+                    chkGrafGir.setChecked(true)
+                }
+
+                else -> throw IllegalArgumentException()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_settings)
 
-        val spnRecDelay = findViewById<Spinner>(R.id.delaySpinner)
-        val rdgFileType = findViewById<RadioGroup>(R.id.cgpFormatArq)
-        val edtMaxLines = findViewById<EditText>(R.id.edtNumMaxLinhas)
-        val swtMaxLines = findViewById<Switch>(R.id.switchStopRecording)
-        val txtMaxLines = findViewById<TextView>(R.id.txtSwitchStopRecording)
-        val chkGraficoAcc = findViewById<CheckBox>(R.id.checkboxAcc)
-        val chkGraficoGir = findViewById<CheckBox>(R.id.checkboxGir)
-        val btnSalvar = findViewById<TextView>(R.id.btnSalvar)
-        val btnCancelar = findViewById<TextView>(R.id.btnCancelar)
-
-        val intentRecebido = intent
-        val filetype = intentRecebido.getStringExtra("KEY_EXTENSAO_ARQUIVO")
-        val maxlines = intentRecebido.getStringExtra("KEY_NUM_MAX_LINHAS")
-        val recdelay = intentRecebido.getStringExtra("KEY_DELAY_GRAVACAO")
-        val graphvis = intentRecebido.getStringExtra("KEY_GRAFICOS_VISIVEIS")
-        
-        var newFiletype = filetype
-        var newMaxlines = maxlines
-        var newRecdelay = recdelay
-        var newGraphvis = graphvis
+        spnIntGrav  = findViewById(R.id.delaySpinner)
+        rgpExtArq   = findViewById(R.id.cgpFormatArq)
+        edtMaxLin   = findViewById(R.id.edtNumMaxLinhas)
+        swtMaxLin   = findViewById(R.id.switchStopRecording)
+        txtMaxLin   = findViewById(R.id.txtSwitchStopRecording)
+        chkGrafAcc  = findViewById(R.id.checkboxAcc)
+        chkGrafGir  = findViewById(R.id.checkboxGir)
+        btnSalvar   = findViewById(R.id.btnSalvar)
+        btnCancelar = findViewById(R.id.btnCancelar)
 
         val arrayDelays = arrayOf<String>(
             "Delay normal (200 milissegundos)",
@@ -55,149 +144,101 @@ class MenuSettings : AppCompatActivity() {
             "Delay rápido (60 milissegundos)",
             "Delay ultrarrápido (20 milissegundos)")
 
-        val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayDelays);  
-        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); 
-        spnRecDelay.setAdapter(aa);
+        val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayDelays)
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spnIntGrav.setAdapter(aa)
 
-        when (recdelay){
-            "200" -> spnRecDelay.setSelection(0)
-            "100" -> spnRecDelay.setSelection(1)
-            "60" -> spnRecDelay.setSelection(2)
-            "20" -> spnRecDelay.setSelection(3)
-        }
+        val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
+        val prefEditor = pref.edit()
 
-        spnRecDelay.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(av: AdapterView<*>?, v: View, pos: Int, id: Long){
-                newRecdelay = when (pos){
-                    0 -> "200"
-                    1 -> "100"
-                    2 -> "60"
-                    3 -> "20"
-                    else -> "0"
-                }
-            }
+        intervaloGravacao = pref.getInt("KEY_DELAY_GRAVACAO", 200)
+        extensaoArquivo = pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ?: "csv"
+        numMaxLinhas = pref.getInt("KEY_NUM_MAX_LINHAS", 120)
+        isNumMaxLinhas = pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true)
+        graficosVisiveis = pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)
 
-            override fun onNothingSelected(av: AdapterView<*>?){
-
-            }
-        })
-
-        when (filetype){
-            "csv" -> rdgFileType.check(R.id.chkCSV)
-            "txt" -> rdgFileType.check(R.id.chkTXT)
-        }
-        rdgFileType.setOnCheckedChangeListener(object : RadioGroup.OnCheckedChangeListener {
-            override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
-                val rb = findViewById<RadioButton>(checkedId)
-                when (rb.text.toString()) {
-                    "Formato .csv" -> newFiletype = "csv"
-                    "Formato .txt" -> newFiletype = "txt"
-                }
-            }
-        })
-
-        edtMaxLines.setText(maxlines)
-        if (maxlines == "0"){
-            swtMaxLines.isChecked = false
-            txtMaxLines.text = "Recurso desativado"
-            edtMaxLines.isEnabled = false
-
-        } else {
-            swtMaxLines.isChecked = true
-            txtMaxLines.text = "Recurso ativado"
-            edtMaxLines.isEnabled = true
-            edtMaxLines.setText(maxlines)
-        }
-        swtMaxLines.setOnCheckedChangeListener(object : CompoundButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
-                if (isChecked){
-                    txtMaxLines.text = "Recurso ativado"
-                    edtMaxLines.isEnabled = true
-                }
-                else {
-                    txtMaxLines.text = "Recurso desativado"
-                    edtMaxLines.isEnabled = false
-                }
-            }
-        })
-
-        when (graphvis){
-            "0" -> {
-                chkGraficoAcc.setChecked(false)
-                chkGraficoGir.setChecked(false)
-            }
-
-            "1" -> {
-                chkGraficoAcc.setChecked(true)
-                chkGraficoGir.setChecked(false)
-            }
-
-            "2" -> {
-                chkGraficoAcc.setChecked(false)
-                chkGraficoGir.setChecked(true)
-            }
-
-            "3" -> {
-                chkGraficoAcc.setChecked(true)
-                chkGraficoGir.setChecked(true)
-            }
+        swtMaxLin.setOnCheckedChangeListener {
+            _: CompoundButton, isChecked: Boolean ->
+                isNumMaxLinhas = isChecked
         }
 
         btnSalvar.setOnClickListener {
-            val intentSender = Intent(applicationContext, MainActivity::class.java)
-            newMaxlines = if (edtMaxLines.isEnabled) edtMaxLines.text.toString() else "0"
-            val g1 = if (chkGraficoAcc.isChecked) 1 else 0
-            val g2 = if (chkGraficoGir.isChecked) 2 else 0
-            newGraphvis = (g1 + g2).toString()
-            intentSender.putExtra("KEY_NOME_ACTIVITY", "MenuSettings")
-            intentSender.putExtra("KEY_ACAO_USUARIO", "salvar")
-            intentSender.putExtra("KEY_EXTENSAO_ARQUIVO", newFiletype)
-            intentSender.putExtra("KEY_NUM_MAX_LINHAS", newMaxlines)
-            intentSender.putExtra("KEY_DELAY_GRAVACAO", newRecdelay)
-            intentSender.putExtra("KEY_GRAFICOS_VISIVEIS", newGraphvis)
-            startActivity(intentSender)
-            Toast.makeText(this, "As alterações foram salvas com sucesso!", Toast.LENGTH_SHORT).show()
-            finish()
+            if (intervaloGravacao != pref.getInt("KEY_DELAY_GRAVACAO", 200) ||
+            extensaoArquivo != pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ||
+            numMaxLinhas != pref.getInt("KEY_NUM_MAX_LINHAS", 120) ||
+            isNumMaxLinhas != pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true) ||
+            graficosVisiveis != pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)){
+                prefEditor.putInt("KEY_NUM_MAX_LINHAS", numMaxLinhas)
+                prefEditor.putInt("KEY_DELAY_GRAVACAO", intervaloGravacao)
+                prefEditor.putString("KEY_EXTENSAO_ARQUIVO", extensaoArquivo)
+                prefEditor.putBoolean("KEY_IS_NUM_MAX_LINHAS", isNumMaxLinhas)
+                prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", graficosVisiveis)
+                prefEditor.commit()
+
+                Toast.makeText(this, "As alterações foram salvas com sucesso!", Toast.LENGTH_SHORT).show()
+            }
+
+            voltaMenuPrincipal()
         }
 
         btnCancelar.setOnClickListener {
-            newMaxlines = if (edtMaxLines.isEnabled) edtMaxLines.text.toString() else "0"
-            val g1 = if (chkGraficoAcc.isChecked) 1 else 0
-            val g2 = if (chkGraficoGir.isChecked) 2 else 0
-            newGraphvis = (g1 + g2).toString()
-            if (newFiletype != filetype || newRecdelay != recdelay ||
-            newMaxlines != maxlines || newGraphvis != graphvis){
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("Deseja cancelar?")
-                builder.setMessage("As alterações feitas não serão salvas.")
+            if (intervaloGravacao != pref.getInt("KEY_DELAY_GRAVACAO", 200) ||
+            extensaoArquivo != pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ||
+            numMaxLinhas != pref.getInt("KEY_NUM_MAX_LINHAS", 120) ||
+            isNumMaxLinhas != pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true) ||
+            graficosVisiveis != pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)){
+                val builderCancelar = AlertDialog.Builder(this)
+                builderCancelar.setTitle("Deseja cancelar?")
+                builderCancelar.setMessage("As alterações feitas não serão salvas.")
 
-                builder.setPositiveButton("Continuar", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int) {
-                        val intentSender = Intent(applicationContext, MainActivity::class.java)
-                        intentSender.putExtra("KEY_NOME_ACTIVITY", "MenuSettings")
-                        intentSender.putExtra("KEY_ACAO_USUARIO", "cancelar")
-                        startActivity(intentSender)
+                builderCancelar.setPositiveButton("Continuar", {
+                    dialog: DialogInterface, _: Int ->
                         dialog.dismiss()
-                        finish()
-                    }
+                        voltaMenuPrincipal()
                 })
 
-                builder.setNegativeButton("Voltar", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int) {
+                builderCancelar.setNegativeButton("Voltar", { 
+                    dialog: DialogInterface, _: Int ->
                         dialog.dismiss()
-                    }
                 })
                 
-                builder.create().show()
-            
-            } else {
-                val intentSender = Intent(applicationContext, MainActivity::class.java)
-                intentSender.putExtra("KEY_NOME_ACTIVITY", "MenuSettings")
-                intentSender.putExtra("KEY_ACAO_USUARIO", "cancelar")
-                startActivity(intentSender)
-                finish()
-            }          
+                builderCancelar.create().show()
+
+            } else voltaMenuPrincipal()           
         }
+    }
+
+    private fun voltaMenuPrincipal(){
+        val intentMenuPrincipal = Intent(applicationContext, MainActivity::class.java)
+        startActivity(intentMenuPrincipal)
+        finish()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.toolbar_configuracoes, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_mostrar_sensores -> {
+                val builderSensores = AlertDialog.Builder(this)
+                val appSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+                val sensores = appSensorManager.getSensorList(Sensor.TYPE_ALL).map{it.name}.toTypedArray()
+                
+                builderSensores.setCancelable(false)
+                builderSensores.setItems(sensores){_: DialogInterface, _: Int -> }
+                
+                builderSensores.setPositiveButton("OK"){
+                    dialog: DialogInterface, _: Int ->
+                        dialog.dismiss()
+                }
+                
+                builderSensores.show()
+            }
+        }
+
+        return true
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -215,6 +256,7 @@ class MenuSettings : AppCompatActivity() {
                 }
             }
         }
+
         return super.dispatchTouchEvent(event)
     }
 }

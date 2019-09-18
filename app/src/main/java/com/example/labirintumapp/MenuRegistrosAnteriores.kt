@@ -1,6 +1,7 @@
 package com.example.labirintumapp
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -248,22 +249,26 @@ class MenuRegistrosAnteriores : AppCompatActivity() {
             R.id.item_compartilhar -> {
                 val intentCompartilhar = Intent(Intent.ACTION_SEND)
                 val arquivoEnviar = File(diretorioArquivo)
+                val uriArquivo = Uri.parse("file://" + diretorioArquivo)
+
+                val resInfoList = applicationContext.packageManager
+                .queryIntentActivities(intentCompartilhar,
+                    PackageManager.MATCH_DEFAULT_ONLY)
+
+                var nomePacote: String
+                for (resInfo in resInfoList){
+                    nomePacote = resInfo.activityInfo.packageName
+                    
+                    applicationContext.grantUriPermission(nomePacote, uriArquivo,
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
 
                 if (arquivoEnviar.exists()){
-                    intentCompartilhar.setType(URLConnection
-                        .guessContentTypeFromName(arquivoEnviar.name))
-                    
-                    intentCompartilhar.putExtra(Intent.EXTRA_STREAM,
-                        Uri.parse("file://" + diretorioArquivo))
-
-                    intentCompartilhar.putExtra(Intent.EXTRA_SUBJECT,
-                        "Compartilhar arquivo")
-
-                    intentCompartilhar.putExtra(Intent.EXTRA_TEXT,
-                        "Compartilhar arquivo")
-
-                    startActivity(Intent.createChooser(
-                        intentCompartilhar, "Compartilhar arquivo"))
+                    intentCompartilhar.setType(URLConnection.guessContentTypeFromName(arquivoEnviar.name))
+                    intentCompartilhar.putExtra(Intent.EXTRA_STREAM, uriArquivo)
+                    intentCompartilhar.putExtra(Intent.EXTRA_SUBJECT, arquivoEnviar.name)
+                    intentCompartilhar.putExtra(Intent.EXTRA_TEXT, "Dados de ${arquivoEnviar.name}")
+                    startActivity(Intent.createChooser(intentCompartilhar, "Compartilhar arquivo"))
                 }
 
                 return true
