@@ -1,16 +1,14 @@
 package com.example.labirintumapp
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Environment
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -24,16 +22,17 @@ import java.io.File
 
 const val TAG = "LABIRINTUMAPP"
 
-class MainActivity : AppCompatActivity(){
+class MenuPrincipal : AppCompatActivity(){
     private lateinit var btnRegistros: Button
     private lateinit var btnIniciar: LinearLayout
     private lateinit var btnConfigs: LinearLayout
     private lateinit var mainLayout: RelativeLayout 
 
     companion object {
-        private val MY_PERMISSIONS_REQUEST_WRITE = 1
+        private const val MY_PERMISSIONS_REQUEST_WRITE = 1
     }
     
+    @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_principal)
@@ -50,19 +49,14 @@ class MainActivity : AppCompatActivity(){
             val builderNomeArq = AlertDialog.Builder(this)
             builderNomeArq.setTitle("Qual é o nome do arquivo?")
 
-            val input = EditText(this)
-            val lp2 = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT)
-
-            input.layoutParams = lp2
-            input.hint = "Insira o nome do arquivo"
-            builderNomeArq.setView(input, 20, 0, 20, 0)
+            val input = layoutInflater.inflate(R.layout.campo_nome_arquivo, null, false)
+            val edtNomeArq = input.findViewById<EditText>(R.id.edtNomeArq)
+            builderNomeArq.setView(input)
 
             builderNomeArq.setPositiveButton("Iniciar"){
                 dialog: DialogInterface, _: Int ->
                     dialog.dismiss()
-                    var nomeArquivo = input.text.toString()
+                    val nomeArquivo = edtNomeArq.text.toString()
                     val diretorioGravacao = geraDiretorioGravacao(nomeArquivo)
                     iniciarGravacao(diretorioGravacao, MenuGravacao.MODO_PADRAO)
             }
@@ -96,25 +90,20 @@ class MainActivity : AppCompatActivity(){
             prefEditor.putInt("KEY_DELAY_GRAVACAO", 200)
             prefEditor.putString("KEY_EXTENSAO_ARQUIVO", "csv")
             prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", 3)
-            prefEditor.commit()
+            prefEditor.apply()
         }
-    }
-
-    override fun onResume(){
-        super.onResume()
     }
 
     private fun geraDiretorioGravacao(nomeArq: String): String {
         val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
         val extensaoArquivo = pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ?: "csv"
 
-        var nomeArquivo = nomeArq
-        val diretorioPai = "${Environment.getExternalStorageDirectory().path}/LabirintumDados"
+        val diretorioPai = "${getExternalFilesDir(null)!!.path}/LabirintumDados"
         var intCont = 0
         var strCont = ""
 
-        if (nomeArquivo.endsWith(extensaoArquivo))
-            nomeArquivo.dropLast(extensaoArquivo.length)
+        if (nomeArq.endsWith(extensaoArquivo))
+            nomeArq.dropLast(extensaoArquivo.length)
 
         val pasta = File(diretorioPai)
         if (!pasta.exists()){
@@ -123,10 +112,10 @@ class MainActivity : AppCompatActivity(){
 
         var diretorioArquivo: String
         while (true) {
-            diretorioArquivo = "${diretorioPai}/${nomeArquivo}${strCont}.${extensaoArquivo}"
-            var arquivo = File(diretorioArquivo)
+            diretorioArquivo = "$diretorioPai/$nomeArq$strCont.$extensaoArquivo"
+            val arquivo = File(diretorioArquivo)
 
-            if (arquivo.isFile()){
+            if (arquivo.isFile){
                 intCont += 1
                 strCont = " (%02d)".format(intCont)
             } else return diretorioArquivo

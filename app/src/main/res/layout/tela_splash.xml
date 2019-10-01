@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     android:gravity="center"
-    tools:context=".MainActivity">
+    tools:context=".MenuPrincipal">
 
     <ImageView
         android:layout_width="wrap_content"

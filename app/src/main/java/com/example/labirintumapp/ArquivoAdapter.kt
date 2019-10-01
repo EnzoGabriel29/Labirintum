@@ -16,25 +16,20 @@ class InfoArquivo(nome: String, modif: String, dir: String){
     val diretorioArquivo = dir
 }
 
-public class ArquivoAdapter(arquivos: MutableList<InfoArquivo>,
+class ArquivoAdapter(arquivos: MutableList<InfoArquivo>,
     act: MenuRegistros, list: RecyclerViewClickListener
-    ) : RecyclerView.Adapter<ArquivoAdapter.ArquivoViewHolder>() {
-    
-    public inner class ArquivoViewHolder : RecyclerView.ViewHolder {
-        val txtNomeArquivo: TextView
-        val txtDataModificado: TextView
-        val btnMostraOpcoes: AppCompatImageButton
-        val cardViewArquivo: LinearLayout
+    ) : RecyclerView.Adapter<ArquivoAdapter.ArquivoViewHolder>(){
 
-        constructor (v: View) : super(v) {
-            txtNomeArquivo = v.findViewById(R.id.txtNomeArquivo)
-            txtDataModificado = v.findViewById(R.id.txtDataModificado)
-            btnMostraOpcoes = v.findViewById(R.id.btnMostraOpcoes)
-            cardViewArquivo = v.findViewById(R.id.cardViewLayout)      
+    inner class ArquivoViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+        val txtNomeArquivo: TextView = v.findViewById(R.id.txtNomeArquivo)
+        val txtDataModificado: TextView = v.findViewById(R.id.txtDataModificado)
+        private val btnMostraOpcoes: AppCompatImageButton = v.findViewById(R.id.btnMostraOpcoes)
+        private val cardViewArquivo: LinearLayout = v.findViewById(R.id.cardViewLayout)
 
+        init {
             btnMostraOpcoes.setOnClickListener {
-                val popup = PopupMenu(activity, btnMostraOpcoes)  
-                popup.menuInflater.inflate(R.menu.popup_registros, popup.menu)  
+                val popup = PopupMenu(activity, btnMostraOpcoes)
+                popup.menuInflater.inflate(R.menu.popup_registros, popup.menu)
 
                 popup.setOnMenuItemClickListener {
                     item: MenuItem ->
@@ -44,7 +39,6 @@ public class ArquivoAdapter(arquivos: MutableList<InfoArquivo>,
 
                 popup.show()
             }
-
             cardViewArquivo.setOnClickListener {
                 listener.onCardClicked(adapterPosition)
             }
@@ -62,8 +56,8 @@ public class ArquivoAdapter(arquivos: MutableList<InfoArquivo>,
         val nomeArquivo = a.nomeArquivo
         val dataModificado = "Modificado em %s".format(a.dataModificado)
 
-        avh.txtNomeArquivo.setText(nomeArquivo)
-        avh.txtDataModificado.setText(dataModificado)
+        avh.txtNomeArquivo.text = nomeArquivo
+        avh.txtDataModificado.text = dataModificado
     }
 
     override fun onCreateViewHolder(vg: ViewGroup, i: Int): ArquivoViewHolder {
@@ -73,11 +67,7 @@ public class ArquivoAdapter(arquivos: MutableList<InfoArquivo>,
         return ArquivoViewHolder(itemView)
     }
 
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-    }
-
-    public fun atualizaLista(novaLista: MutableList<InfoArquivo>){
+    fun atualizaLista(novaLista: MutableList<InfoArquivo>){
         this.listaArquivos = novaLista
         notifyDataSetChanged()
     }

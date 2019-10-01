@@ -6,18 +6,14 @@ import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 
 class SplashActivity : AppCompatActivity(){
-    
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.tela_splash)
 
-        Handler().postDelayed(object : Runnable {
-            override fun run(){
-                val intent = Intent(this@SplashActivity, MainActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
+        Handler().postDelayed({
+            val intent = Intent(this, MenuPrincipal::class.java)
+            startActivity(intent)
+            finish()
         }, 3000)
     }
-
 }

@@ -13,45 +13,44 @@ import java.util.UUID
 class BluetoothConnector(private val activity: MenuGravacao){
     private var mState: Int = 0
     private var mNewState: Int = 0
-    private val mAdapter: BluetoothAdapter
+    private val mAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private var mSecureAcceptThread: AcceptThread? = null
     private var mInsecureAcceptThread: AcceptThread? = null
     private var mConnectThread: ConnectThread? = null
     private var mConnectedThread: ConnectedThread? = null
     
     companion object {
-        private val NAME_SECURE = "BluetoothSecure"
-        private val NAME_INSECURE = "BluetoothInsecure"
+        private const val NAME_SECURE = "BluetoothSecure"
+        private const val NAME_INSECURE = "BluetoothInsecure"
         private val MY_UUID_SECURE = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66")
         private val MY_UUID_INSECURE = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66")
-        val STATE_NONE = 0
-        val STATE_LISTEN = 1
-        val STATE_CONNECTING = 2
-        val STATE_CONNECTED = 3
+        const val STATE_NONE = 0
+        const val STATE_LISTEN = 1
+        const val STATE_CONNECTING = 2
+        const val STATE_CONNECTED = 3
     }
 
     init {
-        mAdapter = BluetoothAdapter.getDefaultAdapter()
         mState = STATE_NONE
         mNewState = mState
     }
 
-    @Synchronized public fun getState(): Int {
+    @Synchronized fun getState(): Int {
         return mState
     }
 
-    public fun iniciaTerapeuta(){
+    fun iniciaTerapeuta(){
         start()
     }
 
-    public fun iniciaPaciente(device: BluetoothDevice, secure: Boolean){
+    fun iniciaPaciente(device: BluetoothDevice, secure: Boolean){
         connect(device, secure)
     }
 
-    public fun enviaMensagem(outMsg: String){
+    fun enviaMensagem(outMsg: String){
         var r: ConnectedThread?
 
-        synchronized (this) {
+        synchronized(this){
             if (mState != STATE_CONNECTED) return
             r = mConnectedThread
         }
@@ -60,7 +59,7 @@ class BluetoothConnector(private val activity: MenuGravacao){
         r!!.write(byteMsg)
     }
 
-    public fun cancelaDescoberta(){
+    fun cancelaDescoberta(){
         if (mConnectThread != null){
             mConnectThread!!.cancel()
             mConnectThread = null
@@ -82,7 +81,7 @@ class BluetoothConnector(private val activity: MenuGravacao){
         }
     }
 
-    @Synchronized public fun start(){
+    @Synchronized fun start(){
         if (mConnectThread != null){
             mConnectThread!!.cancel()
             mConnectThread = null
@@ -104,7 +103,7 @@ class BluetoothConnector(private val activity: MenuGravacao){
         }
     }
 
-    @Synchronized public fun connect(device: BluetoothDevice, secure: Boolean){
+    @Synchronized fun connect(device: BluetoothDevice, secure: Boolean){
         if (mState == STATE_CONNECTING) {
             if (mConnectThread != null) {
                 mConnectThread!!.cancel()
@@ -121,7 +120,7 @@ class BluetoothConnector(private val activity: MenuGravacao){
         mConnectThread!!.start()
     }
 
-    @Synchronized fun connected(socket: BluetoothSocket, device: BluetoothDevice, socketType: String) {
+    @Synchronized fun connected(socket: BluetoothSocket){
         if (mConnectThread != null){
             mConnectThread!!.cancel()
             mConnectThread = null
@@ -142,7 +141,7 @@ class BluetoothConnector(private val activity: MenuGravacao){
             mInsecureAcceptThread = null
         }
       
-        mConnectedThread = ConnectedThread(socket, socketType)
+        mConnectedThread = ConnectedThread(socket)
         mConnectedThread!!.start()
     }
 
@@ -155,10 +154,10 @@ class BluetoothConnector(private val activity: MenuGravacao){
             mSocketType = if (secure) "Secure" else "Insecure"
 
             try {
-              if (secure)
-                tmp = mAdapter.listenUsingRfcommWithServiceRecord(NAME_SECURE, MY_UUID_SECURE)
-              else
-                tmp = mAdapter.listenUsingInsecureRfcommWithServiceRecord(NAME_INSECURE, MY_UUID_INSECURE)
+                tmp = if (secure)
+                    mAdapter.listenUsingRfcommWithServiceRecord(NAME_SECURE, MY_UUID_SECURE)
+                else
+                    mAdapter.listenUsingInsecureRfcommWithServiceRecord(NAME_INSECURE, MY_UUID_INSECURE)
             
             } catch (e: IOException) {
                 
@@ -168,10 +167,10 @@ class BluetoothConnector(private val activity: MenuGravacao){
             mState = STATE_LISTEN
         }
 
-        public override fun run() {
-            var socket: BluetoothSocket? = null
+        override fun run() {
+            var socket: BluetoothSocket?
 
-            while (mState !== STATE_CONNECTED){
+            while (mState != STATE_CONNECTED){
                 try {
                     socket = mmServerSocket!!.accept()
 
@@ -183,11 +182,11 @@ class BluetoothConnector(private val activity: MenuGravacao){
                     synchronized (this@BluetoothConnector){
                         when (mState) {
                             STATE_LISTEN, STATE_CONNECTING ->
-                                connected(socket, socket.getRemoteDevice(), mSocketType)
+                                connected(socket)
 
                             STATE_NONE, STATE_CONNECTED ->
                                 try {
-                                    socket!!.close()
+                                    socket.close()
                                 
                                 } catch (e: IOException){
                                 
@@ -200,7 +199,7 @@ class BluetoothConnector(private val activity: MenuGravacao){
             }
         }
 
-        public fun cancel() {            
+        fun cancel() {
             try {
               mmServerSocket!!.close()
             
@@ -210,20 +209,19 @@ class BluetoothConnector(private val activity: MenuGravacao){
         }
     }
 
-    private inner class ConnectedThread(socket: BluetoothSocket, socketType: String) : Thread() {
-        private val mmSocket: BluetoothSocket
+    private inner class ConnectedThread(socket: BluetoothSocket) : Thread() {
+        private val mmSocket: BluetoothSocket = socket
         private val mmInStream: InputStream?
         private val mmOutStream: OutputStream?
 
         init {
-            mmSocket = socket
-        
+
             var tmpIn: InputStream? = null
             var tmpOut: OutputStream? = null
       
             try {
-                tmpIn = socket.getInputStream()
-                tmpOut = socket.getOutputStream()
+                tmpIn = socket.inputStream
+                tmpOut = socket.outputStream
             } catch (e: IOException) {
 
             }
@@ -233,16 +231,15 @@ class BluetoothConnector(private val activity: MenuGravacao){
             mState = STATE_CONNECTED
         }
 
-        public override fun run(){        
+        override fun run(){
             val buffer = ByteArray(1024)
             var bytes: Int
             
-            while (mState === STATE_CONNECTED){
+            while (mState == STATE_CONNECTED){
                 try {
                     bytes = mmInStream!!.read(buffer)
-                    
-                    val incomingMessage = String(buffer, 0, bytes)
-                    when (incomingMessage){
+
+                    when (val incomingMessage = String(buffer, 0, bytes)){
                         "0" -> this@BluetoothConnector.activity.pararGravacao()
                         "1" -> this@BluetoothConnector.activity.iniciarGravacao()
                         "2" -> this@BluetoothConnector.activity.pausarGravacao()
@@ -256,8 +253,8 @@ class BluetoothConnector(private val activity: MenuGravacao){
                 }
             }
         }
-      
-        public fun write(buffer: ByteArray) {
+
+        fun write(buffer: ByteArray) {
             try {
                 mmOutStream!!.write(buffer)
 
@@ -266,7 +263,7 @@ class BluetoothConnector(private val activity: MenuGravacao){
             }
         }
 
-        public fun cancel() {
+        fun cancel() {
             try {
                 mmSocket.close()
             } catch (e:IOException) {
@@ -277,17 +274,15 @@ class BluetoothConnector(private val activity: MenuGravacao){
 
     private inner class ConnectThread (device: BluetoothDevice, secure: Boolean) : Thread() {
         private val mmSocket: BluetoothSocket?
-        private val mmDevice: BluetoothDevice
         private val mSocketType: String
 
         init {
-            mmDevice = device
             var tmp: BluetoothSocket? = null
             mSocketType = if (secure) "Secure" else "Insecure"
         
             try {
-                if (secure) tmp = device.createRfcommSocketToServiceRecord(MY_UUID_SECURE)
-                else tmp = device.createInsecureRfcommSocketToServiceRecord(MY_UUID_INSECURE)
+                tmp = if (secure) device.createRfcommSocketToServiceRecord(MY_UUID_SECURE)
+                else device.createInsecureRfcommSocketToServiceRecord(MY_UUID_INSECURE)
             
             } catch (e: IOException) {
                 
@@ -296,8 +291,8 @@ class BluetoothConnector(private val activity: MenuGravacao){
             mmSocket = tmp
             mState = STATE_CONNECTING
         }
-      
-        public override fun run() {
+
+        override fun run() {
             mAdapter.cancelDiscovery()
         
             try {
@@ -313,14 +308,14 @@ class BluetoothConnector(private val activity: MenuGravacao){
                 return
             }
 
-            synchronized (this@BluetoothConnector){
+            synchronized(this@BluetoothConnector){
                 mConnectThread = null
             }
         
-            connected(mmSocket, mmDevice, mSocketType)
+            connected(mmSocket)
         }
 
-        public fun cancel() {
+        fun cancel() {
             try {
                 mmSocket!!.close()
             

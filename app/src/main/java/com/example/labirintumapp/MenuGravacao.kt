@@ -14,7 +14,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.view.Gravity
-import android.view.View
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -29,27 +28,28 @@ import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
 import java.io.FileWriter
+import kotlin.math.abs
 
-class SensorAndroid(){
-    public var duracao = 0
-    public var accValorX = 0.0
-    public var accValorY = 0.0
-    public var accValorZ = 0.0
-    public var girValorX = 0.0
-    public var girValorY = 0.0
-    public var girValorZ = 0.0
+class SensorAndroid {
+    var duracao = 0
+    var accValorX = 0.0
+    var accValorY = 0.0
+    var accValorZ = 0.0
+    var girValorX = 0.0
+    var girValorY = 0.0
+    var girValorZ = 0.0
 
-    public fun aumentaDuracao(dur: Int){
+    fun aumentaDuracao(dur: Int){
         this.duracao += dur
     }
 
-    public fun atualizaValoresAcc(accX: Double, accY: Double, accZ: Double){
+    fun atualizaValoresAcc(accX: Double, accY: Double, accZ: Double){
         this.accValorX = accX
         this.accValorY = accY
         this.accValorZ = accZ
     }
 
-    public fun atualizaValoresGir(girX: Double, girY: Double, girZ: Double){
+    fun atualizaValoresGir(girX: Double, girY: Double, girZ: Double){
         this.girValorX = girX
         this.girValorY = girY
         this.girValorZ = girZ
@@ -101,17 +101,17 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private var isPararThreads = false
     private var maxEixoY = 20.0
 
-    private var linhasPreGravadas = arrayOf<String>("HORARIO,ACC EIXO X,ACC EIXO Y,ACC EIXO Z,GIR EIXO X,GIR EIXO Y,GIR EIXO Z")
+    private var linhasPreGravadas = arrayOf("HORARIO,ACC EIXO X,ACC EIXO Y,ACC EIXO Z,GIR EIXO X,GIR EIXO Y,GIR EIXO Z")
 
     companion object {
-        private val REQUEST_ENABLE_BT = 1
-        public val MODO_PADRAO = 2
-        public val MODO_REMOTO = 3
-        public val USER_TERAPEUTA = 4
-        public val USER_PACIENTE = 5
-        private val BOTAO_PAUSAR = 6
-        private val BOTAO_CONTINUAR = 7
-        private val HANDLER_TOAST = 8
+        private const val REQUEST_ENABLE_BT = 1
+        const val MODO_PADRAO = 2
+        const val MODO_REMOTO = 3
+        const val USER_TERAPEUTA = 4
+        const val USER_PACIENTE = 5
+        private const val BOTAO_PAUSAR = 6
+        private const val BOTAO_CONTINUAR = 7
+        private const val HANDLER_TOAST = 8
     }
 
     private val adaptadorBluetooth = BluetoothAdapter.getDefaultAdapter()
@@ -161,16 +161,16 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         else graphLayout.removeViews(3, 3)
 
         for (i in 0 until graficosEixos.size){
-            seriesEixos += LineGraphSeries<DataPoint>()
+            seriesEixos += LineGraphSeries()
 
             graficosEixos[i].addSeries(seriesEixos[i])
 
-            graficosEixos[i].viewport.setXAxisBoundsManual(true)
+            graficosEixos[i].viewport.isXAxisBoundsManual = true
             graficosEixos[i].viewport.setMinX(0.0)
             if (!isLimiteLinhas) graficosEixos[i].viewport.setMaxX(40.0)
             else graficosEixos[i].viewport.setMaxX(numLinhasMaximo.toDouble())
 
-            graficosEixos[i].viewport.setYAxisBoundsManual(true)
+            graficosEixos[i].viewport.isYAxisBoundsManual = true
             graficosEixos[i].viewport.setMinY(0.0)
             graficosEixos[i].viewport.setMaxY(maxEixoY)
         }
@@ -254,8 +254,8 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         super.onDestroy()
     }
 
-    public inner class TaskProgresso : AsyncTask<Void, Void?, Void?>(){
-        override protected fun onPreExecute(){
+    inner class TaskProgresso : AsyncTask<Void, Void?, Void?>(){
+        override fun onPreExecute(){
             if (builder == null){
                 builder = AlertDialog.Builder(this@MenuGravacao)
                 builder!!.setTitle("Aguardando conexão com outro dispositivo...")
@@ -276,19 +276,19 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                     LinearLayout.LayoutParams.WRAP_CONTENT)
                 progressBar.layoutParams = layoutParams
 
-                builder!!.setView(progressBar, 0, 10, 0, 0)
+                builder!!.setView(progressBar)
                 progressDialog = builder!!.create()
             }
 
             progressDialog.show()
         }
 
-        override protected fun doInBackground(vararg params: Void?): Void? {
+        override fun doInBackground(vararg params: Void?): Void? {
             while (bluetoothConnector.getState() != BluetoothConnector.STATE_CONNECTED){ }
             return null
         }
 
-        override protected fun onPostExecute(result: Void?){
+        override fun onPostExecute(result: Void?){
             if (tipoUsuario == USER_TERAPEUTA)
                 bluetoothConnector.enviaMensagem("1")
 
@@ -298,7 +298,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
     private fun mostraDispositivosPareados(){
         val bEscolhePareados = AlertDialog.Builder(this)
-        val dispositivosPareados = adaptadorBluetooth.getBondedDevices()
+        val dispositivosPareados = adaptadorBluetooth.bondedDevices
 
         val dispositivos = Array(dispositivosPareados.size){ dispositivosPareados.elementAt(it) }
         val nomesDispositivos = Array(dispositivosPareados.size){ dispositivos[it].name}
@@ -336,7 +336,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         recLayout.removeAllViews()
 
         val textoEspera = TextView(this)
-        textoEspera.setText("Os dados estão sendo\nenviados ao seu terapeuta.")
+        textoEspera.text = "Os dados estão sendo\nenviados ao seu terapeuta."
         val rllp = RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.MATCH_PARENT)
@@ -372,8 +372,8 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             var tempoInicial = System.currentTimeMillis()
             while (true){
                 if (!isPausarThreads){
-                    var tempoFinal = System.currentTimeMillis()
-                    var duracao = tempoFinal - tempoInicial
+                    val tempoFinal = System.currentTimeMillis()
+                    val duracao = tempoFinal - tempoInicial
                     
                     if (duracao > intervaloGravacao){
                         flagPararGravacao = false
@@ -386,7 +386,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         }
     }
 
-    public fun iniciarGravacao(){
+    fun iniciarGravacao(){
         if (this.modoGravacao == MODO_PADRAO)
             Toast.makeText(this, "O registro dos dados foi iniciado! " +
                     "O arquivo será salvo em $diretorioArquivo.", Toast.LENGTH_LONG).show()
@@ -399,7 +399,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         ThreadFiltro().start()
     }
 
-    public fun pararGravacao(){
+    fun pararGravacao(){
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         isPararThreads = true
         flagPararGravacao = true
@@ -420,24 +420,24 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             }
         }
 
-        val intentSender = Intent(applicationContext, MainActivity::class.java)
+        val intentSender = Intent(applicationContext, MenuPrincipal::class.java)
         intentSender.putExtra("KEY_NOME_ACTIVITY", "MenuGravacao")
         startActivity(intentSender)
         finish()
     }
 
-    public fun pausarGravacao(){
+    fun pausarGravacao(){
         isPausarThreads = true
         flagPararGravacao = true
     }
 
-    public fun retomarGravacao(){
+    fun retomarGravacao(){
         flagPararGravacao = false
         isPausarThreads = false
     }
 
     private fun atualizarTela(){
-        var row = TableRow(this)
+        val row = TableRow(this)
 
         val lp = TableRow.LayoutParams(
             TableRow.LayoutParams.MATCH_PARENT,
@@ -579,7 +579,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         }
     }
 
-    public fun escreverCSV(msg: String){
+    fun escreverCSV(msg: String){
         this.linhasPreGravadas += msg
 
         val camposString = msg.split(",")
@@ -636,9 +636,9 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                         girFlagInit = true
 
                     } else {
-                        girEixoX = Math.abs(girEixoX0 - girEixoX1)
-                        girEixoY = Math.abs(girEixoY0 - girEixoY1)
-                        girEixoZ = Math.abs(girEixoZ0 - girEixoZ1)
+                        girEixoX = abs(girEixoX0 - girEixoX1)
+                        girEixoY = abs(girEixoY0 - girEixoY1)
+                        girEixoZ = abs(girEixoZ0 - girEixoZ1)
                 
                         girEixoX0 = girEixoX1
                         girEixoY0 = girEixoY1
@@ -660,9 +660,9 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                         accFlagInit = true
 
                     } else {
-                        accEixoX = Math.abs(accEixoX0 - accEixoX1)
-                        accEixoY = Math.abs(accEixoY0 - accEixoY1)
-                        accEixoZ = Math.abs(accEixoZ0 - accEixoZ1)
+                        accEixoX = abs(accEixoX0 - accEixoX1)
+                        accEixoY = abs(accEixoY0 - accEixoY1)
+                        accEixoZ = abs(accEixoZ0 - accEixoZ1)
                 
                         accEixoX0 = accEixoX1
                         accEixoY0 = accEixoY1
@@ -681,7 +681,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         }
     }
 
-    override protected fun onActivityResult(requestCode: Int, resultCode: Int, dataInt: Intent?){
+    override fun onActivityResult(requestCode: Int, resultCode: Int, dataInt: Intent?){
         if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_CANCELED){
             Toast.makeText(this, "Para prosseguir, é necessário " +
                 "que o recurso de Bluetooth seja ativado.", Toast.LENGTH_LONG).show()

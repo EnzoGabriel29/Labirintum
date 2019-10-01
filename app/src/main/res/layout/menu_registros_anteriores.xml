@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:id="@+id/menuRegistrosAnteriores"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".MenuPrincipal">
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabs"

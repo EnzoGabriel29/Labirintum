@@ -30,18 +30,14 @@ import java.io.File
 import java.net.URLConnection
 import java.util.Scanner
 
-class FragmentoGraficos() : Fragment() {
+class FragmentoGraficos : Fragment() {
     private var diretorioArquivo = ""
     private var maxValores = 0.0
 
-    public fun defineDiretorio(dir: String){
+    fun defineDiretorio(dir: String){
         this.diretorioArquivo = dir
     }
 
-    override fun onCreate(savedInstanceState: Bundle?){
-        super.onCreate(savedInstanceState)
-    }
- 
     override fun onCreateView(inflater: LayoutInflater,
     container: ViewGroup?, savedInstanceState: Bundle?): View {
         val itemView = inflater.inflate(R.layout.fragmento_graficos, container, false)
@@ -93,35 +89,31 @@ class FragmentoGraficos() : Fragment() {
     }
 
     private fun atualizaGrafico(grafico: GraphView, pontos: Array<Double>){
-        grafico.getViewport().setXAxisBoundsManual(true)
-        grafico.getViewport().setMinX(0.0)
-        grafico.getViewport().setMaxX(pontos.size.toDouble())
+        grafico.viewport.isXAxisBoundsManual = true
+        grafico.viewport.setMinX(0.0)
+        grafico.viewport.setMaxX(pontos.size.toDouble())
 
-        grafico.getViewport().setYAxisBoundsManual(true)
-        grafico.getViewport().setMinY(0.0)
-        grafico.getViewport().setMaxY(maxValores+10.0)
+        grafico.viewport.isYAxisBoundsManual = true
+        grafico.viewport.setMinY(0.0)
+        grafico.viewport.setMaxY(maxValores+10.0)
 
-        grafico.getViewport().setScalable(true)
+        grafico.viewport.isScalable = true
 
         var pontosArquivo = emptyArray<DataPoint>()
         for (x in 0 until pontos.size)
             pontosArquivo += DataPoint(x.toDouble(), pontos[x])
-        val seriesArquivo = LineGraphSeries<DataPoint>(pontosArquivo)
+        val seriesArquivo = LineGraphSeries(pontosArquivo)
         grafico.addSeries(seriesArquivo)
     }
 }
 
-class FragmentoTexto() : Fragment() {
+class FragmentoTexto : Fragment() {
     private var diretorioArquivo = ""
     private lateinit var activity: MenuRegistrosAnteriores
 
-    public fun inicializaFragmento(dir: String, act: MenuRegistrosAnteriores){
+    fun inicializaFragmento(dir: String, act: MenuRegistrosAnteriores){
         this.diretorioArquivo = dir
         this.activity = act
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?){
-        super.onCreate(savedInstanceState)
     }
  
     override fun onCreateView(inflater: LayoutInflater,
@@ -145,7 +137,7 @@ class FragmentoTexto() : Fragment() {
     }
 
     private fun atualizaTabela(tabela: TableLayout, linha: Array<Double>){
-        var row = TableRow(this.activity)
+        val row = TableRow(this.activity)
 
         val lp = TableRow.LayoutParams(
             TableRow.LayoutParams.MATCH_PARENT,
@@ -234,13 +226,13 @@ class MenuRegistrosAnteriores : AppCompatActivity() {
 
         val intentRecebido = intent
         diretorioArquivo = intentRecebido.getStringExtra("KEY_DIRETORIO_ARQUIVO") ?: ""
-        setTitle(diretorioArquivo.split("/").last())
+        title = diretorioArquivo.split("/").last()
         
         TaskCarregaArquivo().execute()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        getMenuInflater().inflate(R.menu.toolbar_registros_anteriores, menu)
+        menuInflater.inflate(R.menu.toolbar_registros_anteriores, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -249,7 +241,7 @@ class MenuRegistrosAnteriores : AppCompatActivity() {
             R.id.item_compartilhar -> {
                 val intentCompartilhar = Intent(Intent.ACTION_SEND)
                 val arquivoEnviar = File(diretorioArquivo)
-                val uriArquivo = Uri.parse("file://" + diretorioArquivo)
+                val uriArquivo = Uri.parse("file://$diretorioArquivo")
 
                 val resInfoList = applicationContext.packageManager
                 .queryIntentActivities(intentCompartilhar,
@@ -264,7 +256,7 @@ class MenuRegistrosAnteriores : AppCompatActivity() {
                 }
 
                 if (arquivoEnviar.exists()){
-                    intentCompartilhar.setType(URLConnection.guessContentTypeFromName(arquivoEnviar.name))
+                    intentCompartilhar.type = URLConnection.guessContentTypeFromName(arquivoEnviar.name)
                     intentCompartilhar.putExtra(Intent.EXTRA_STREAM, uriArquivo)
                     intentCompartilhar.putExtra(Intent.EXTRA_SUBJECT, arquivoEnviar.name)
                     intentCompartilhar.putExtra(Intent.EXTRA_TEXT, "Dados de ${arquivoEnviar.name}")
@@ -274,28 +266,26 @@ class MenuRegistrosAnteriores : AppCompatActivity() {
                 return true
             }
 
-            else -> return super.onOptionsItemSelected(item);
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    public inner class ViewPagerAdapter : FragmentPagerAdapter {
+    inner class ViewPagerAdapter(manager: FragmentManager) : FragmentPagerAdapter(manager){
         private val mFragmentList = arrayListOf<Fragment>()
         private val mFragmentTitleList = arrayListOf<String>()
-        
-        constructor(manager: FragmentManager) : super(manager){ }
- 
+
         override fun getCount() = mFragmentList.size
         override fun getItem(pos: Int) = mFragmentList[pos] 
         override fun getPageTitle(pos: Int) = mFragmentTitleList[pos]
  
-        public fun adicionaFragmento(fragmento: Fragment, nome: String){
+        fun adicionaFragmento(fragmento: Fragment, nome: String){
             mFragmentList.add(fragmento)
             mFragmentTitleList.add(nome)
         }
     }
 
-    public inner class TaskCarregaArquivo : AsyncTask<Void, Void?, ViewPagerAdapter>(){
-        override protected fun onPreExecute(){
+    inner class TaskCarregaArquivo : AsyncTask<Void, Void?, ViewPagerAdapter>(){
+        override fun onPreExecute(){
             if (builder == null){
                 builder = AlertDialog.Builder(this@MenuRegistrosAnteriores)
                 builder!!.setTitle("Carregando arquivo...")
@@ -307,16 +297,16 @@ class MenuRegistrosAnteriores : AppCompatActivity() {
                     LinearLayout.LayoutParams.WRAP_CONTENT)
                 progressBar.layoutParams = layoutParams
 
-                builder!!.setView(progressBar, 0, 10, 0, 0)
+                builder!!.setView(progressBar)
                 progressDialog = builder!!.create()
             }
 
             progressDialog.show()
         }
 
-        override protected fun doInBackground(vararg params: Void?): ViewPagerAdapter {
-            viewPager = findViewById<ViewPager>(R.id.viewpager)
-            val adapter = ViewPagerAdapter(getSupportFragmentManager())
+        override fun doInBackground(vararg params: Void?): ViewPagerAdapter {
+            viewPager = findViewById(R.id.viewpager)
+            val adapter = ViewPagerAdapter(supportFragmentManager)
             
             val fragGraf = FragmentoGraficos()
             fragGraf.defineDiretorio(diretorioArquivo)
@@ -330,10 +320,10 @@ class MenuRegistrosAnteriores : AppCompatActivity() {
             return adapter
         }
 
-        override protected fun onPostExecute(result: ViewPagerAdapter){
-            viewPager.setAdapter(result)
+        override fun onPostExecute(result: ViewPagerAdapter){
+            viewPager.adapter = result
  
-            tabLayout = findViewById<TabLayout>(R.id.tabs)
+            tabLayout = findViewById(R.id.tabs)
             tabLayout.setupWithViewPager(viewPager)
 
             progressDialog.dismiss()

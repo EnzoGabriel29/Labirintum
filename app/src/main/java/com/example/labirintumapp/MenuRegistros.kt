@@ -1,11 +1,11 @@
 package com.example.labirintumapp
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.os.Environment
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Menu
@@ -31,16 +31,16 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
     private var infoArquivosUI = arrayListOf<InfoArquivo>()
     private lateinit var arquivoAdapter: ArquivoAdapter
     private lateinit var edtBuscaRegistros: EditText
-    private lateinit var menuOrdenar: Menu
     private var ordenarNome = true
     private var ordenarCresc = true 
 
+    @SuppressLint("SimpleDateFormat")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_registros)
 
-        val dirArquivos = "${Environment.getExternalStorageDirectory().path}/LabirintumDados"
-        val pastaArquivos = File(dirArquivos).listFiles()
+        val dirArquivos = "${getExternalFilesDir(null)!!.path}/LabirintumDados"
+        val pastaArquivos = File(dirArquivos).listFiles() ?: emptyArray()
 
         for (arquivo in pastaArquivos){
             if (arquivo.name.endsWith(".csv") || arquivo.name.endsWith(".txt"))
@@ -57,8 +57,8 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
         val recyclerList = findViewById<RecyclerView>(R.id.cardList)
         recyclerList.setHasFixedSize(true)
         val llm = LinearLayoutManager(this)
-        llm.setOrientation(LinearLayoutManager.VERTICAL)
-        recyclerList.setLayoutManager(llm)
+        llm.orientation = LinearLayoutManager.VERTICAL
+        recyclerList.layoutManager = llm
 
         val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
         ordenarNome = pref.getBoolean("KEY_ORDENAR_REGISTROS_NOME", true)
@@ -66,12 +66,12 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
 
         arquivoAdapter = ArquivoAdapter(infoArquivos, this, this)
         ordenaLista(ordenarNome, ordenarCresc, true)
-        recyclerList.setAdapter(arquivoAdapter)
+        recyclerList.adapter = arquivoAdapter
 
         edtBuscaRegistros = findViewById(R.id.edtBuscaRegistros)
         edtBuscaRegistros.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable){
-                infoArquivosUI = arrayListOf<InfoArquivo>()
+                infoArquivosUI = arrayListOf()
                 
                 for (arquivo in infoArquivos){
                    if (arquivo.nomeArquivo.startsWith(s.toString()))
@@ -86,6 +86,7 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
         })
     }
 
+    @SuppressLint("SimpleDateFormat")
     private fun ordenaLista(nome: Boolean, cresc: Boolean, primeiraVez: Boolean){
         if ((nome != ordenarNome || cresc != ordenarCresc) || primeiraVez){
             val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
@@ -93,18 +94,16 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
 
             prefEditor.putBoolean("KEY_ORDENAR_REGISTROS_NOME", nome)
             prefEditor.putBoolean("KEY_ORDENAR_REGISTROS_CRESC", cresc)
-            prefEditor.commit() 
+            prefEditor.apply()
 
             ordenarNome = nome
             ordenarCresc = cresc
 
-            if (nome) infoArquivos.sortWith(
-                compareBy<InfoArquivo>({ it.nomeArquivo }))
+            if (nome) infoArquivos.sortWith(compareBy{it.nomeArquivo})
 
-            else infoArquivos.sortWith(
-                compareBy<InfoArquivo>({ SimpleDateFormat(
+            else infoArquivos.sortWith(compareBy { SimpleDateFormat(
                     "dd/MM/yyyy, HH:mm:ss").parse(it
-                    .dataModificado).time }))
+                    .dataModificado)!!.time })
 
             if (!cresc) infoArquivos.reverse()
 
@@ -126,21 +125,21 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
                 val popup = PopupMenu(this, itemView)  
                 popup.menuInflater.inflate(R.menu.popup_ordenar, popup.menu)  
 
-                if (ordenarNome) popup.menu.getItem(0).setChecked(true)
-                else popup.menu.getItem(1).setChecked(true)
+                if (ordenarNome) popup.menu.getItem(0).isChecked = true
+                else popup.menu.getItem(1).isChecked = true
 
                 popup.setOnMenuItemClickListener {
                     item2: MenuItem ->
                         when (item2.itemId){
                             R.id.action_ordenar_nome -> {
-                                popup.menu.getItem(0).setChecked(true)
-                                popup.menu.getItem(1).setChecked(false)
+                                popup.menu.getItem(0).isChecked = true
+                                popup.menu.getItem(1).isChecked = false
                                 ordenaLista(true, ordenarCresc, false)
                             }
 
                             R.id.action_ordenar_data -> {
-                                popup.menu.getItem(0).setChecked(false)
-                                popup.menu.getItem(1).setChecked(true)
+                                popup.menu.getItem(0).isChecked = false
+                                popup.menu.getItem(1).isChecked = true
                                 ordenaLista(false, ordenarCresc, false)
                             }
                         }
@@ -158,22 +157,22 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
                 val popup = PopupMenu(this, itemView)  
                 popup.menuInflater.inflate(R.menu.popup_ordenar_por, popup.menu)  
 
-                if (ordenarCresc) popup.menu.getItem(0).setChecked(true)
-                else popup.menu.getItem(1).setChecked(true)
+                if (ordenarCresc) popup.menu.getItem(0).isChecked = true
+                else popup.menu.getItem(1).isChecked = true
 
                 popup.setOnMenuItemClickListener {
                     item2: MenuItem ->
                         when (item2.itemId){
                             R.id.action_ordenar_cresc -> {
-                                popup.menu.getItem(0).setChecked(true)
-                                popup.menu.getItem(1).setChecked(false)
-                                ordenaLista(ordenarNome, true, false)
+                                popup.menu.getItem(0).isChecked = true
+                                popup.menu.getItem(1).isChecked = false
+                                ordenaLista(ordenarNome, cresc = true, primeiraVez = false)
                             }
 
                             R.id.action_ordenar_decresc -> {
-                                popup.menu.getItem(0).setChecked(false)
-                                popup.menu.getItem(1).setChecked(true)
-                                ordenaLista(ordenarNome, false, false)
+                                popup.menu.getItem(0).isChecked = false
+                                popup.menu.getItem(1).isChecked = true
+                                ordenaLista(ordenarNome, cresc = false, primeiraVez = false)
                             }
                         }
 
@@ -189,7 +188,7 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
         }
     }
 
-    override public fun onCardClicked(pos: Int){
+    override fun onCardClicked(pos: Int){
         val a = infoArquivosUI[pos]
 
         val intent = Intent(applicationContext, MenuRegistrosAnteriores::class.java)
@@ -197,7 +196,7 @@ class MenuRegistros : AppCompatActivity() , RecyclerViewClickListener {
         startActivity(intent)
     }
 
-    override public fun onItemClicked(nome: String, pos: Int){
+    override fun onItemClicked(nome: String, pos: Int){
         when (nome){
             "Excluir" -> {
                 val a = infoArquivosUI[pos]

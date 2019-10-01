@@ -11,9 +11,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
-import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.CheckBox
 import android.widget.CompoundButton
@@ -38,7 +36,7 @@ class MenuSettings : AppCompatActivity(){
     private lateinit var btnCancelar: TextView
 
     private var intervaloGravacao: Int
-        get() = when (spnIntGrav.getSelectedItem().toString()){
+        get() = when (spnIntGrav.selectedItem.toString()){
             "Delay normal (200 milissegundos)" -> 200
             "Delay acima do normal (100 milissegundos)" -> 100
             "Delay rápido (60 milissegundos)" -> 60
@@ -58,7 +56,8 @@ class MenuSettings : AppCompatActivity(){
 
     private var extensaoArquivo: String
         get() = when(findViewById<RadioButton>(
-        rgpExtArq.getCheckedRadioButtonId()).text.toString()){
+        rgpExtArq.checkedRadioButtonId
+        ).text.toString()){
             "Formato .csv" -> "csv"
             "Formato .txt" -> "txt"
             else -> ""
@@ -101,23 +100,23 @@ class MenuSettings : AppCompatActivity(){
         set(valor){
             when (valor){
                 0 -> {
-                    chkGrafAcc.setChecked(false)
-                    chkGrafGir.setChecked(false)
+                    chkGrafAcc.isChecked = false
+                    chkGrafGir.isChecked = false
                 }
 
                 1 -> {
-                    chkGrafAcc.setChecked(true)
-                    chkGrafGir.setChecked(false)
+                    chkGrafAcc.isChecked = true
+                    chkGrafGir.isChecked = false
                 }
 
                 2 -> {
-                    chkGrafAcc.setChecked(false)
-                    chkGrafGir.setChecked(true)
+                    chkGrafAcc.isChecked = false
+                    chkGrafGir.isChecked = true
                 }
 
                 3 -> {
-                    chkGrafAcc.setChecked(true)
-                    chkGrafGir.setChecked(true)
+                    chkGrafAcc.isChecked = true
+                    chkGrafGir.isChecked = true
                 }
 
                 else -> throw IllegalArgumentException()
@@ -138,7 +137,7 @@ class MenuSettings : AppCompatActivity(){
         btnSalvar   = findViewById(R.id.btnSalvar)
         btnCancelar = findViewById(R.id.btnCancelar)
 
-        val arrayDelays = arrayOf<String>(
+        val arrayDelays = arrayOf(
             "Delay normal (200 milissegundos)",
             "Delay acima do normal (100 milissegundos)",
             "Delay rápido (60 milissegundos)",
@@ -146,7 +145,7 @@ class MenuSettings : AppCompatActivity(){
 
         val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayDelays)
         aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spnIntGrav.setAdapter(aa)
+        spnIntGrav.adapter = aa
 
         val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
         val prefEditor = pref.edit()
@@ -173,7 +172,7 @@ class MenuSettings : AppCompatActivity(){
                 prefEditor.putString("KEY_EXTENSAO_ARQUIVO", extensaoArquivo)
                 prefEditor.putBoolean("KEY_IS_NUM_MAX_LINHAS", isNumMaxLinhas)
                 prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", graficosVisiveis)
-                prefEditor.commit()
+                prefEditor.apply()
 
                 Toast.makeText(this, "As alterações foram salvas com sucesso!", Toast.LENGTH_SHORT).show()
             }
@@ -191,16 +190,16 @@ class MenuSettings : AppCompatActivity(){
                 builderCancelar.setTitle("Deseja cancelar?")
                 builderCancelar.setMessage("As alterações feitas não serão salvas.")
 
-                builderCancelar.setPositiveButton("Continuar", {
+                builderCancelar.setPositiveButton("Continuar"){
                     dialog: DialogInterface, _: Int ->
                         dialog.dismiss()
                         voltaMenuPrincipal()
-                })
+                }
 
-                builderCancelar.setNegativeButton("Voltar", { 
+                builderCancelar.setNegativeButton("Voltar"){
                     dialog: DialogInterface, _: Int ->
                         dialog.dismiss()
-                })
+                }
                 
                 builderCancelar.create().show()
 
@@ -209,7 +208,7 @@ class MenuSettings : AppCompatActivity(){
     }
 
     private fun voltaMenuPrincipal(){
-        val intentMenuPrincipal = Intent(applicationContext, MainActivity::class.java)
+        val intentMenuPrincipal = Intent(applicationContext, MenuPrincipal::class.java)
         startActivity(intentMenuPrincipal)
         finish()
     }

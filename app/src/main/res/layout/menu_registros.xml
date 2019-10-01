@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:focusableInTouchMode="true"
     android:id="@+id/menuRegistrosLayout"
-    tools:context=".MainActivity">
+    tools:context=".MenuPrincipal">
 
     <EditText
         android:layout_width="match_parent"
