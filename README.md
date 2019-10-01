@@ -46,42 +46,47 @@ os valores de aceleração de cada eixo do dispositivo, no formato `%.2f`.
 
 ## Como usar o aplicativo
 
-![](https://i.imgur.com/K8KQtgb.jpg?1)
+<img src="https://i.imgur.com/K8KQtgb.jpg?1" alt="menu-principal" width="250"/>
 
 Na tela inicial do aplicativo, existem três opções de botões: **Iniciar**, **Opções** e **Sobre**.
+
 Para iniciar a gravação dos dados, basta clicar no botão **Iniciar** na parte inferior da tela.
 
-![](https://i.imgur.com/eAFTz4l.jpg?1)
+<img src="https://i.imgur.com/eAFTz4l.jpg?1" alt="menu-nome-arquivo" width="250"/>
 
 Ao clicar no botão **Iniciar**, será mostrada uma caixa de diálogo que receberá o nome do arquivo a ser
 criado. Não é necessário colocar o nome do arquivo como sufixo, como **.csv** ou **.txt**, visto que já
 é colocado automaticamente. Quando o nome do arquivo for definido, basta clicar no botão **Iniciar** da
 caixa de diálogo para iniciar o registro dos dados.
 
-![](https://i.imgur.com/vZJ4v2l.jpg?1)
+<img src="https://i.imgur.com/vZJ4v2l.jpg?1" alt="menu-gravacao" width="250"/>
 
 Em seguida, aparecerá uma mensagem indicando a pasta em que o arquivo foi salvo (sempre será na memória
 interna dentro da pasta **LabirintumDados**). À medida em que os dados vão sendo salvos, uma lista
 com os valores que estão registrados em memória será atualizada na tela, não só com o tempo decorrido mas
-também com os valores dos eixos. O usuário poderá pausar ou parar o registro dos dados, clicando respectivamente
+também com os valores dos eixos.
+
+O usuário poderá pausar ou parar o registro dos dados, clicando respectivamente
 nos botões **Pausar** e **Parar** na parte inferior da tela. Os dados também podem ser salvos com o aplicativo
 em segundo plano. Parar o registro dos dados voltará ao menu principal e o arquivo poderá ser aberto no
 diretório informado anteriormente. Dependendo das configurações definidas no menu **Opções**, também é
 possível ver a representação dos dados em três gráficos, um para cada eixo, na parte superior da tela.
 
-![](https://i.imgur.com/5ZGvGr5.jpg?1)
+<img src="https://i.imgur.com/5ZGvGr5.jpg?1" alt="menu-configuracoes" width="250"/>
 
 Ao voltar para o menu principal e selecionar o botão **Opções**, aparecerá o menu de configurações do aplicativo.
 Nela, o usuário pode definir de quanto em quanto tempo os dados serão salvos no dispositivo
 em milissegundos, na seção **Intervalo de gravação**, o formato de arquivo a ser salvo, CSV ou TXT, na seção
 **Formato de arquivo**, ativar e definir o número máximo de linhas que cada arquivo salvo pode ter, na seção
 **Limitar número de linhas salvas**, e escolher quais gráficos devem ficar visíveis durante o registros dos
-dados, na seção **Definir gráficos visíveis**. Por fim, ao clicar nos três pontinhos no canto superior direito
+dados, na seção **Definir gráficos visíveis**.
+
+Por fim, ao clicar nos três pontinhos no canto superior direito
 e selecionar a opção **Mostrar sensores disponíveis**, irá aparecer uma lista com os sensores presentes no dispositivo.
 Caso o dado de algum sensor esteja apenas registrando valores nulos, é uma boa prática verificar se o sensor
 está presente nessa lista.
 
-![](https://i.imgur.com/fpZW1KQ.jpg?1)
+<img src="https://i.imgur.com/fpZW1KQ.jpg?1" alt="menu-registros-anteriores" width="250"/>
 
 De volta ao menu principal, ao clicar no botão de **Registros anteriores**, aparecerá todos os registros
 salvos no dispositivo, baseados na pasta padrão de salvamento **LabirintumDados**, tanto com extensão **.csv**
@@ -90,8 +95,8 @@ e um botão no canto superior direito do card com uma opção para exluir o arqu
 pesquisar por arquivos utilizando o campo de pesquisa. Os arquivos poderão ser ordenados de ordem crescente
 ou decrescente e por data ou por nome, selecionando os botões do canto superior direito da tela.
 
-![](https://i.imgur.com/uuFetlI.jpg?1)
-![](https://i.imgur.com/sViUCV5.jpg?1)
+<img src="https://i.imgur.com/uuFetlI.jpg?1" alt="menu-registros-anteriores" width="250"/>
+<img src="https://i.imgur.com/sViUCV5.jpg?1" alt="menu-registros-anteriores" width="250"/>
 
 Ao selecionar um card, aparecerá duas abas com opções de visualização: uma para visualizar os gráficos dos
 três eixos do acelerômetro e do giroscópio e outro para visualizar o conteúdo do arquivo em forma de uma
