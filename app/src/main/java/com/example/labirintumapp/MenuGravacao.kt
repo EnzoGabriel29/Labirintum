@@ -92,6 +92,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private var modoGravacao = 0 
     private var diretorioArquivo = ""
     private var extensaoArquivo = ""
+    private var modoCalculo = ""
     private var tipoUsuario = 0
     private var graficosVisiveis = 0
     private var isLimiteLinhas = false
@@ -99,7 +100,9 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private var isGraficoGir = false
     private var isPausarThreads = false
     private var isPararThreads = false
+    private var minEixoY = 0.0
     private var maxEixoY = 20.0
+
 
     private var linhasPreGravadas = arrayOf("HORARIO,ACC EIXO X,ACC EIXO Y,ACC EIXO Z,GIR EIXO X,GIR EIXO Y,GIR EIXO Z")
 
@@ -134,6 +137,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         intervaloGravacao = pref.getInt("KEY_DELAY_GRAVACAO", 200)
         graficosVisiveis = pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)
         isLimiteLinhas = pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true)
+        modoCalculo = pref.getString("KEY_MODO_CALCULO", "var") ?: "var"
 
         tabelaDados = findViewById(R.id.tabelaDados)
         recLayout   = findViewById(R.id.rec_layout)
@@ -336,7 +340,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         recLayout.removeAllViews()
 
         val textoEspera = TextView(this)
-        textoEspera.text = "Os dados estão sendo\nenviados ao seu terapeuta."
+        textoEspera.text = "Os dados estão sendo enviados ao seu terapeuta."
         val rllp = RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.MATCH_PARENT)
@@ -543,12 +547,12 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         val pontoX = sensorAtual.duracao / this.intervaloGravacao.toDouble()
 
         val pontosEixoX = if (isLimiteLinhas) numLinhasMaximo else 40
-        val isGraficoFixo = isLimiteLinhas
+        val isGraficoFixo = isLimiteLinhas || linhasRegistradas < 40
 
-        val valoresEixos = arrayOf(sensorAtual.accValorX,
-            sensorAtual.accValorY, sensorAtual.accValorZ,
-            sensorAtual.girValorX, sensorAtual.girValorY,
-            sensorAtual.girValorZ)
+        val valoresEixos = arrayOf(
+            sensorAtual.accValorX, sensorAtual.accValorY,
+            sensorAtual.accValorZ, sensorAtual.girValorX,
+            sensorAtual.girValorY, sensorAtual.girValorZ)
 
         if (valoresEixos.filter{it > maxEixoY}.any()){
             val novoMax = valoresEixos.max() ?: 0.0
@@ -558,6 +562,18 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
             maxEixoY = novoMax
         }
+
+        if (valoresEixos.filter{it < minEixoY}.any()){
+            val novoMin = valoresEixos.min() ?: 0.0
+
+            for (grafico in graficosEixos)
+                grafico.viewport.setMinY(novoMin - 10.0)
+
+            minEixoY = novoMin
+        }
+
+        for (grafico in graficosEixos)
+            grafico.viewport.setMaxX(linhasRegistradas.toDouble())
 
         if (isGraficoAcc && isGraficoGir){
             seriesEixos[0].appendData(DataPoint(pontoX, sensorAtual.accValorX), !isGraficoFixo, pontosEixoX)
@@ -586,7 +602,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         val camposDouble = Array(7){ camposString[it].toDouble() }
         val pontoX = camposDouble[0] / 40
         val pontosEixoX = if (isLimiteLinhas) numLinhasMaximo else 40
-        val isGraficoFixo = isLimiteLinhas
+        val isGraficoFixo = isLimiteLinhas || linhasRegistradas < 40
 
         if (isGraficoAcc && isGraficoGir){
             seriesEixos[0].appendData(DataPoint(pontoX, camposDouble[1]), !isGraficoFixo, pontosEixoX)
@@ -607,8 +623,8 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             seriesEixos[2].appendData(DataPoint(pontoX, camposDouble[6]), !isGraficoFixo, pontosEixoX)
         }
 
-        if (this.isLimiteLinhas){
-            if (++this.linhasRegistradas == this.numLinhasMaximo){
+        if (isLimiteLinhas){
+            if (++linhasRegistradas == numLinhasMaximo){
                 val message = Message()
                 message.what = HANDLER_TOAST
                 message.obj = "O limite máximo de gravação foi atingido!"
@@ -622,14 +638,14 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int){ }
 
     override fun onSensorChanged(event: SensorEvent){
-        if (!flagPararGravacao){
-            when (event.sensor.type){
-                Sensor.TYPE_GYROSCOPE -> {
-                    val girEixoX1 = event.values[0].toDouble()
-                    val girEixoY1 = event.values[1].toDouble()
-                    val girEixoZ1 = event.values[2].toDouble()
+        when (event.sensor.type){
+            Sensor.TYPE_GYROSCOPE -> {
+                val girEixoX1 = event.values[0].toDouble()
+                val girEixoY1 = event.values[1].toDouble()
+                val girEixoZ1 = event.values[2].toDouble()
 
-                    if (!girFlagInit){
+                if (modoCalculo == "var"){
+                    if (!girFlagInit) {
                         girEixoX0 = girEixoX1
                         girEixoY0 = girEixoY1
                         girEixoZ0 = girEixoZ1
@@ -639,21 +655,24 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                         girEixoX = abs(girEixoX0 - girEixoX1)
                         girEixoY = abs(girEixoY0 - girEixoY1)
                         girEixoZ = abs(girEixoZ0 - girEixoZ1)
-                
+
                         girEixoX0 = girEixoX1
                         girEixoY0 = girEixoY1
                         girEixoZ0 = girEixoZ1
 
                         sensorAtual.atualizaValoresGir(girEixoX, girEixoY, girEixoZ)
                     }
-                }
 
-                Sensor.TYPE_ACCELEROMETER -> {
-                    val accEixoX1 = event.values[0].toDouble()
-                    val accEixoY1 = event.values[1].toDouble()
-                    val accEixoZ1 = event.values[2].toDouble()
+                } else sensorAtual.atualizaValoresGir(girEixoX1, girEixoY1, girEixoZ1)
+            }
 
-                    if (!accFlagInit){
+            Sensor.TYPE_ACCELEROMETER -> {
+                val accEixoX1 = event.values[0].toDouble()
+                val accEixoY1 = event.values[1].toDouble()
+                val accEixoZ1 = event.values[2].toDouble()
+
+                if (modoCalculo == "var"){
+                    if (!accFlagInit) {
                         accEixoX0 = accEixoX1
                         accEixoY0 = accEixoY1
                         accEixoZ0 = accEixoZ1
@@ -663,16 +682,21 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
                         accEixoX = abs(accEixoX0 - accEixoX1)
                         accEixoY = abs(accEixoY0 - accEixoY1)
                         accEixoZ = abs(accEixoZ0 - accEixoZ1)
-                
+
                         accEixoX0 = accEixoX1
                         accEixoY0 = accEixoY1
                         accEixoZ0 = accEixoZ1
 
                         sensorAtual.atualizaValoresAcc(accEixoX, accEixoY, accEixoZ)
                     }
-                }
-            }
 
+                } else sensorAtual.atualizaValoresAcc(accEixoX1, accEixoY1, accEixoZ1)
+            }
+        }
+
+        // Apenas efetua o registro dos dados caso o tempo
+        // em milissegundos definido tenha sido alcançado.
+        if (!flagPararGravacao){
             escreverCSV()
             atualizarTela()
             if (isGraficoAcc || isGraficoGir) atualizarGraficos()
@@ -681,6 +705,8 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         }
     }
 
+    // Recebe o resultado do Intent que solicita a
+    // ativação do Bluetooth no dispositivo do usuário.
     override fun onActivityResult(requestCode: Int, resultCode: Int, dataInt: Intent?){
         if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_CANCELED){
             Toast.makeText(this, "Para prosseguir, é necessário " +

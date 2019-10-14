@@ -36,7 +36,7 @@
         </activity>
 
         <activity
-            android:name=".MenuSettings"
+            android:name=".MenuOpcoes"
             android:label="Configurações"
             android:windowSoftInputMode="stateHidden|adjustPan">
         </activity>
@@ -51,6 +51,17 @@
             android:name=".MenuRegistrosAnteriores"
             android:label="Registros anteriores">
         </activity>
+
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.labirintumapp.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
 
     </application>
 

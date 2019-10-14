@@ -24,9 +24,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
-class MenuSettings : AppCompatActivity(){
+class MenuOpcoes : AppCompatActivity(){
     private lateinit var spnIntGrav: Spinner
     private lateinit var rgpExtArq: RadioGroup
+    private lateinit var rgpModoCalc: RadioGroup
     private lateinit var edtMaxLin: EditText
     private lateinit var swtMaxLin: Switch
     private lateinit var txtMaxLin: TextView
@@ -123,12 +124,30 @@ class MenuSettings : AppCompatActivity(){
             }
         }
 
+    private var modoCalculo: String
+        get() = when(findViewById<RadioButton>(
+            rgpModoCalc.checkedRadioButtonId
+        ).text.toString()){
+            "Valores brutos" -> "brt"
+            "Variação dos valores" -> "var"
+            else -> ""
+        }
+
+        set(valor){
+            when (valor){
+                "var" -> rgpModoCalc.check(R.id.rdbVariacao)
+                "brt" -> rgpModoCalc.check(R.id.rdbBruto)
+                else -> throw IllegalArgumentException()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.menu_settings)
+        setContentView(R.layout.menu_opcoes)
 
         spnIntGrav  = findViewById(R.id.delaySpinner)
         rgpExtArq   = findViewById(R.id.cgpFormatArq)
+        rgpModoCalc = findViewById(R.id.rgpModoCalc)
         edtMaxLin   = findViewById(R.id.edtNumMaxLinhas)
         swtMaxLin   = findViewById(R.id.switchStopRecording)
         txtMaxLin   = findViewById(R.id.txtSwitchStopRecording)
@@ -150,11 +169,19 @@ class MenuSettings : AppCompatActivity(){
         val pref = applicationContext.getSharedPreferences("my_pref", Context.MODE_PRIVATE)
         val prefEditor = pref.edit()
 
-        intervaloGravacao = pref.getInt("KEY_DELAY_GRAVACAO", 200)
-        extensaoArquivo = pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ?: "csv"
-        numMaxLinhas = pref.getInt("KEY_NUM_MAX_LINHAS", 120)
-        isNumMaxLinhas = pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true)
-        graficosVisiveis = pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)
+        val ig1 = pref.getInt("KEY_DELAY_GRAVACAO", 200)
+        val ea1 = pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ?: "csv"
+        val ml1 = pref.getInt("KEY_NUM_MAX_LINHAS", 120)
+        val im1 = pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true)
+        val gv1 = pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)
+        val mc1 = pref.getString("KEY_MODO_CALCULO", "var") ?: "var"
+
+        intervaloGravacao = ig1
+        extensaoArquivo = ea1
+        numMaxLinhas = ml1
+        isNumMaxLinhas = im1
+        graficosVisiveis = gv1
+        modoCalculo = mc1
 
         swtMaxLin.setOnCheckedChangeListener {
             _: CompoundButton, isChecked: Boolean ->
@@ -162,46 +189,44 @@ class MenuSettings : AppCompatActivity(){
         }
 
         btnSalvar.setOnClickListener {
-            if (intervaloGravacao != pref.getInt("KEY_DELAY_GRAVACAO", 200) ||
-            extensaoArquivo != pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ||
-            numMaxLinhas != pref.getInt("KEY_NUM_MAX_LINHAS", 120) ||
-            isNumMaxLinhas != pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true) ||
-            graficosVisiveis != pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)){
-                prefEditor.putInt("KEY_NUM_MAX_LINHAS", numMaxLinhas)
-                prefEditor.putInt("KEY_DELAY_GRAVACAO", intervaloGravacao)
-                prefEditor.putString("KEY_EXTENSAO_ARQUIVO", extensaoArquivo)
-                prefEditor.putBoolean("KEY_IS_NUM_MAX_LINHAS", isNumMaxLinhas)
-                prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", graficosVisiveis)
-                prefEditor.apply()
+            if (intervaloGravacao != ig1 || extensaoArquivo != ea1 ||
+                numMaxLinhas != ml1 || isNumMaxLinhas != im1 ||
+                graficosVisiveis != gv1 || modoCalculo != mc1){
+                    prefEditor.putInt("KEY_NUM_MAX_LINHAS", numMaxLinhas)
+                    prefEditor.putInt("KEY_DELAY_GRAVACAO", intervaloGravacao)
+                    prefEditor.putString("KEY_EXTENSAO_ARQUIVO", extensaoArquivo)
+                    prefEditor.putBoolean("KEY_IS_NUM_MAX_LINHAS", isNumMaxLinhas)
+                    prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", graficosVisiveis)
+                    prefEditor.putString("KEY_MODO_CALCULO", modoCalculo)
+                    prefEditor.apply()
 
-                Toast.makeText(this, "As alterações foram salvas com sucesso!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "As alterações foram " +
+                            "salvas com sucesso!", Toast.LENGTH_SHORT).show()
             }
 
             voltaMenuPrincipal()
         }
 
         btnCancelar.setOnClickListener {
-            if (intervaloGravacao != pref.getInt("KEY_DELAY_GRAVACAO", 200) ||
-            extensaoArquivo != pref.getString("KEY_EXTENSAO_ARQUIVO", "csv") ||
-            numMaxLinhas != pref.getInt("KEY_NUM_MAX_LINHAS", 120) ||
-            isNumMaxLinhas != pref.getBoolean("KEY_IS_NUM_MAX_LINHAS", true) ||
-            graficosVisiveis != pref.getInt("KEY_GRAFICOS_VISIVEIS", 3)){
-                val builderCancelar = AlertDialog.Builder(this)
-                builderCancelar.setTitle("Deseja cancelar?")
-                builderCancelar.setMessage("As alterações feitas não serão salvas.")
+            if (intervaloGravacao != ig1 || extensaoArquivo != ea1 ||
+                numMaxLinhas != ml1 || isNumMaxLinhas != im1 ||
+                graficosVisiveis != gv1 || modoCalculo != mc1){
+                    val builderCancelar = AlertDialog.Builder(this)
+                    builderCancelar.setTitle("Deseja cancelar?")
+                    builderCancelar.setMessage("As alterações feitas não serão salvas.")
 
-                builderCancelar.setPositiveButton("Continuar"){
-                    dialog: DialogInterface, _: Int ->
-                        dialog.dismiss()
-                        voltaMenuPrincipal()
-                }
+                    builderCancelar.setPositiveButton("Continuar"){
+                        dialog: DialogInterface, _: Int ->
+                            dialog.dismiss()
+                            voltaMenuPrincipal()
+                    }
 
-                builderCancelar.setNegativeButton("Voltar"){
-                    dialog: DialogInterface, _: Int ->
-                        dialog.dismiss()
-                }
-                
-                builderCancelar.create().show()
+                    builderCancelar.setNegativeButton("Voltar"){
+                        dialog: DialogInterface, _: Int ->
+                            dialog.dismiss()
+                    }
+
+                    builderCancelar.create().show()
 
             } else voltaMenuPrincipal()           
         }

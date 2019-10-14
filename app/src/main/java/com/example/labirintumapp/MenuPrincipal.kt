@@ -90,6 +90,7 @@ class MenuPrincipal : AppCompatActivity(){
             prefEditor.putInt("KEY_DELAY_GRAVACAO", 200)
             prefEditor.putString("KEY_EXTENSAO_ARQUIVO", "csv")
             prefEditor.putInt("KEY_GRAFICOS_VISIVEIS", 3)
+            prefEditor.putString("KEY_MODO_CALCULO", "var")
             prefEditor.apply()
         }
     }
@@ -157,7 +158,7 @@ class MenuPrincipal : AppCompatActivity(){
     }
 
     private fun defineLayoutConfiguracoes(){
-        val intentConfigs = Intent(applicationContext, MenuSettings::class.java)
+        val intentConfigs = Intent(applicationContext, MenuOpcoes::class.java)
         startActivity(intentConfigs)
     }
 

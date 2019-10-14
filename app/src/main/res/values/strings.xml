@@ -26,17 +26,26 @@
     <string name="title_int_grav">Intervalo de gravação</string>
     <string name="title_form_arq">Formato de arquivo</string>
     <string name="title_max_lin">Limitar número de linhas salvas</string>
-    <string name="title_graf_vis">Definir gráficos visíveis</string>
-    <string name="desc_int_grav">Define de quanto em quanto tempo os dados gerados pelo acelerômetro serão salvos no dispositivo pelo aplicativo.</string>
+    <string name="title_graf_vis">Gráficos visíveis</string>
+    <string name="title_modo_calc">Modo de cálculo</string>
+    <string name="desc_int_grav">Define de quanto em quanto tempo os dados gerados pelo
+        acelerômetro serão salvos no dispositivo pelo aplicativo.</string>
     <string name="desc_form_arq">Define o formato do arquivo a ser salvo no dispositivo.</string>
-    <string name="desc_max_lin">Define se a gravação deve ser interrompida quando o arquivo alcançar um determinado número de linhas.</string>
-    <string name="desc_graf_vis">Define quais gráficos de sensores devem ficar visíveis durante o registro dos dados.</string>
+    <string name="desc_max_lin">Define se a gravação deve ser interrompida quando o arquivo
+        alcançar um determinado número de linhas.</string>
+    <string name="desc_graf_vis">Define quais gráficos de sensores devem ficar visíveis durante o
+        registro dos dados.</string>
+    <string name="desc_modo_calc">Define se os valores do eixos devem ser calculados por meio do
+        seu valor bruto ou por meio de sua variação (diferença entre valor atual e valor
+        anterior).</string>
     <string name="item_form_arq_csv">Formato .csv</string>
     <string name="item_form_arq_txt">Formato .txt</string>
     <string name="item_max_lin_on">Ativar recurso</string>
     <string name="item_max_lin_off">Desativar recurso</string>
     <string name="item_graf_vis_acc">Mostrar gráfico do acelerômetro</string>
     <string name="item_graf_vis_gir">Mostrar gráfico do giroscópio</string>
+    <string name="item_modo_calc_var">Variação dos valores</string>
+    <string name="item_modo_calc_brt">Valores brutos</string>
 
     <string name="string_vazia"></string>
 </resources>
