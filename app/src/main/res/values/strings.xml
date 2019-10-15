@@ -8,6 +8,7 @@
     <string name="raw_z">Z</string>
     <string name="sensor_acc">Acelerômetro</string>
     <string name="sensor_gir">Giroscópio</string>
+    <string name="paciente_espera">Os dados estão sendo enviados ao seu terapeuta.</string>
     <string name="tag_tempo">Tempo</string>
     <string name="tag_dados">Dados registrados</string>
     <string name="btn_pausar">Pausar</string>
@@ -47,5 +48,5 @@
     <string name="item_modo_calc_var">Variação dos valores</string>
     <string name="item_modo_calc_brt">Valores brutos</string>
 
-    <string name="string_vazia"></string>
+    <string name="string_vazia">""</string>
 </resources>

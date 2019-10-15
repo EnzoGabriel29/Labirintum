@@ -164,7 +164,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         } else if (!isGraficoAcc) graphLayout.removeViews(0, 3)
         else graphLayout.removeViews(3, 3)
 
-        for (i in 0 until graficosEixos.size){
+        for (i in graficosEixos.indices){
             seriesEixos += LineGraphSeries()
 
             graficosEixos[i].addSeries(seriesEixos[i])
@@ -184,12 +184,12 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
             if (modoBtnPausar == BOTAO_PAUSAR){
                 pausarGravacao()
                 modoBtnPausar = BOTAO_CONTINUAR
-                btnPausar.text = "Continuar"
+                btnPausar.text = getString(R.string.btn_continuar)
 
             } else {
                 retomarGravacao()
                 modoBtnPausar = BOTAO_PAUSAR
-                btnPausar.text = "Pausar"
+                btnPausar.text = getString(R.string.btn_pausar)
             }
         }
 
@@ -339,13 +339,15 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
     private fun criaLayoutPaciente(){
         recLayout.removeAllViews()
 
+        /*
         val textoEspera = TextView(this)
         textoEspera.text = "Os dados estão sendo enviados ao seu terapeuta."
         val rllp = RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.MATCH_PARENT)
         textoEspera.layoutParams = rllp
-        textoEspera.gravity = Gravity.CENTER  
+        textoEspera.gravity = Gravity.CENTER
+        */
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)  
     }
@@ -354,12 +356,12 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         var btnPausarTerapeuta = BOTAO_PAUSAR
         btnPausar.setOnClickListener {
             if (btnPausarTerapeuta == BOTAO_PAUSAR){
-                btnPausar.text = "Continuar"
+                btnPausar.text = getString(R.string.btn_continuar)
                 btnPausarTerapeuta = BOTAO_CONTINUAR
                 bluetoothConnector.enviaMensagem("2")
 
             } else {
-                btnPausar.text = "Pausar"
+                btnPausar.text = getString(R.string.btn_pausar)
                 btnPausarTerapeuta = BOTAO_PAUSAR
                 bluetoothConnector.enviaMensagem("3")
             }
@@ -547,7 +549,7 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
         val pontoX = sensorAtual.duracao / this.intervaloGravacao.toDouble()
 
         val pontosEixoX = if (isLimiteLinhas) numLinhasMaximo else 40
-        val isGraficoFixo = isLimiteLinhas || linhasRegistradas < 40
+        val isGraficoFixo = isLimiteLinhas
 
         val valoresEixos = arrayOf(
             sensorAtual.accValorX, sensorAtual.accValorY,
@@ -571,9 +573,6 @@ class MenuGravacao : AppCompatActivity() , SensorEventListener {
 
             minEixoY = novoMin
         }
-
-        for (grafico in graficosEixos)
-            grafico.viewport.setMaxX(linhasRegistradas.toDouble())
 
         if (isGraficoAcc && isGraficoGir){
             seriesEixos[0].appendData(DataPoint(pontoX, sensorAtual.accValorX), !isGraficoFixo, pontosEixoX)

@@ -19,6 +19,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.File
+import java.io.FileWriter
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.text.SimpleDateFormat
+import java.util.*
 
 const val TAG = "LABIRINTUMAPP"
 
@@ -36,6 +41,9 @@ class MenuPrincipal : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.menu_principal)
+
+        Thread.setDefaultUncaughtExceptionHandler(
+            CustomizedExceptionHandler(getExternalFilesDir(null)!!.path))
 
         if (!isPermissaoEscrita())
             verificarPermissaoEscrita()
@@ -188,3 +196,40 @@ class MenuPrincipal : AppCompatActivity(){
             MY_PERMISSIONS_REQUEST_WRITE)
     }
 }
+
+class CustomizedExceptionHandler (path: String) : Thread.UncaughtExceptionHandler {
+    private val defaultUEH = Thread.getDefaultUncaughtExceptionHandler()!!
+    private val writePath = path
+
+    override fun uncaughtException(t: Thread, e: Throwable){
+        val stringBuffSync = StringWriter()
+        val printWriter = PrintWriter(stringBuffSync)
+
+        e.printStackTrace(printWriter)
+        val stacktrace = stringBuffSync.toString()
+        printWriter.close()
+
+        writeToFile(stacktrace)
+
+        defaultUEH.uncaughtException(t, e)
+    }
+
+    private fun writeToFile(currentStacktrace: String){
+        try {
+            val dir = File(writePath, "CrashReports")
+            if (!dir.exists()) dir.mkdirs()
+
+            val dateFormat = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
+            val date = Date()
+            val filename = dateFormat.format(date) + ".txt"
+
+            val reportFile = File(dir, filename)
+            val fileWriter = FileWriter(reportFile)
+            fileWriter.append(currentStacktrace)
+            fileWriter.flush()
+            fileWriter.close()
+
+        } catch (e: Exception){}
+    }
+}
+
